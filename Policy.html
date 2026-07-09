@@ -6,35 +6,6 @@
     <title>Policy & Guidelines - Tech Bridge Liberia</title>
     <link rel="stylesheet" href="./Style.CSS">
     <link rel="stylesheet" href="./Policy.CSS">
-    <style>
-    /* News ticker styles */
-    #newsTicker {
-        overflow: hidden;
-        background: #111;
-        color: #fff;
-        padding: 8px 0;
-        font-size: 16px;
-    }
-    .ticker-inner {
-        display: inline-block;
-        white-space: nowrap;
-        will-change: transform;
-        animation: scroll 18s linear infinite;
-    }
-    .ticker-item {
-        color: #fff;
-        text-decoration: none;
-        margin-right: 12px;
-        padding: 0 6px;
-    }
-    .ticker-item:hover { text-decoration: underline; }
-    .ticker-sep { color: #888; margin-right: 12px; }
-
-    @keyframes scroll {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-50%); }
-    }
-    </style>
 </head>
 <body>
     <header>
@@ -51,16 +22,12 @@
                     <li><a href="./index about.html">About</a></li>
                     <li><a href="./Index Service.html">Services</a></li>
                     <li><a href="./Our Staff.html">Our Staffs</a></li>
-                    <li><a href="./News.html">News</a></li>
                     <li><a href="./Contact.html">Contact</a></li>
                     <li><a href="./Policy.html">Policy</a></li>
                 </ul>
             </nav>
         </div>
     </header>
-
-    <!-- News ticker (populated from news-data.js) -->
-    <div id="newsTicker" aria-live="polite" role="region"></div>
 
     <main>
         <!-- Policy Hero Section -->
@@ -339,8 +306,6 @@
             });
         });
     </script>
-    <script src="./news-data.js"></script>
-    <script src="./news.js"></script>
     <script src="./active-nav.js"></script>
 </body>
 </html>

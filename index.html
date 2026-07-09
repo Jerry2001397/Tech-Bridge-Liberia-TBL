@@ -6,32 +6,216 @@
     <title>Tech Bridge LIberia-TBL</title>
     <link rel="stylesheet" href="./Style.CSS">
     <style>
-        /* News ticker styles */
-        #newsTicker {
-            overflow: hidden;
-            background: #111;
-            color: #fff;
-            padding: 8px 0;
-            font-size: 16px;
+        .home-hero {
+            padding: 110px 20px 90px;
+            background: url("./image file/New img/Consultacy.png") center center / cover no-repeat;
         }
-        .ticker-inner {
-            display: inline-block;
-            white-space: nowrap;
-            will-change: transform;
-            animation: scroll 18s linear infinite;
-        }
-        .ticker-item {
-            color: #fff;
-            text-decoration: none;
-            margin-right: 12px;
-            padding: 0 6px;
-        }
-        .ticker-item:hover { text-decoration: underline; }
-        .ticker-sep { color: #888; margin-right: 12px; }
 
-        @keyframes scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 22px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 44px;
+        }
+
+        .home-hero h2,
+        .home-hero p,
+        .home-hero .cta-btn,
+        .home-hero .hero-highlight-card strong,
+        .home-hero .hero-highlight-card span {
+            color: #000;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.95), 0 0 22px rgba(255, 255, 255, 0.75);
+        }
+
+        .home-hero p {
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.72);
+            padding: 14px 18px;
+            border-radius: 14px;
+            box-shadow: 0 10px 26px rgba(255, 255, 255, 0.38);
+            text-shadow: 0 0 12px rgba(255, 255, 255, 1), 0 0 28px rgba(255, 255, 255, 0.9), 0 0 42px rgba(255, 255, 255, 0.7);
+        }
+
+        .home-hero .cta-btn {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(230, 242, 255, 0.92) 100%);
+            border-color: rgba(255, 255, 255, 0.98);
+            border-width: 1px;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16), 0 0 24px rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(10px);
+        }
+
+        .home-hero .cta-btn.secondary {
+            background: linear-gradient(135deg, rgba(255, 240, 244, 0.95) 0%, rgba(255, 224, 230, 0.92) 100%);
+            border-color: rgba(255, 240, 244, 0.98);
+        }
+
+        .hero-actions .cta-btn:first-child {
+            background: linear-gradient(135deg, #fff7da 0%, #ffe08a 100%);
+            border-color: rgba(255, 234, 168, 0.96);
+            box-shadow: 0 16px 34px rgba(160, 118, 0, 0.24), 0 0 26px rgba(255, 232, 163, 0.72);
+        }
+
+        .home-hero .cta-btn:hover,
+        .home-hero .cta-btn.secondary:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(241, 247, 255, 0.98) 100%);
+            color: #000;
+            border-color: rgba(255, 255, 255, 1);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 18px 38px rgba(0, 0, 0, 0.2), 0 0 28px rgba(255, 255, 255, 0.78);
+        }
+
+        .hero-actions .cta-btn:first-child:hover {
+            background: linear-gradient(135deg, #fff8e5 0%, #ffd861 100%);
+            border-color: #ffe08a;
+            box-shadow: 0 18px 36px rgba(160, 118, 0, 0.28), 0 0 30px rgba(255, 229, 148, 0.88);
+        }
+
+        .hero-highlights {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            width: 100%;
+        }
+
+        .hero-highlight-card {
+            background: rgba(255, 255, 255, 0.74);
+            border: 1px solid rgba(255, 255, 255, 0.88);
+            border-radius: 16px;
+            padding: 22px 18px;
+            text-align: left;
+            backdrop-filter: blur(8px);
+        }
+
+        .hero-highlight-card strong {
+            display: block;
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+
+        .hero-highlight-card span {
+            font-size: 0.95rem;
+            opacity: 0.92;
+        }
+
+        .section-intro {
+            max-width: 760px;
+            margin: 0 auto 42px;
+            text-align: center;
+        }
+
+        .section-kicker {
+            display: inline-block;
+            color: var(--secondary-color);
+            font-size: 0.85rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .section-intro h2 {
+            color: var(--primary-color);
+            font-size: 2.4rem;
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+
+        .section-intro p {
+            color: var(--text-light);
+            font-size: 1.05rem;
+            line-height: 1.75;
+        }
+
+        .feature-meta {
+            color: var(--secondary-color);
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .feature-link {
+            margin-top: auto;
+            color: var(--primary-color);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .feature-link:hover {
+            color: var(--secondary-color);
+        }
+
+        .home-process {
+            padding: 90px 20px;
+            background: linear-gradient(135deg, rgba(15, 52, 96, 0.04) 0%, rgba(0, 212, 255, 0.08) 100%);
+        }
+
+        .home-process .container {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .process-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 24px;
+            width: 100%;
+        }
+
+        .process-card {
+            background: var(--bg-white);
+            border-radius: 18px;
+            padding: 30px 26px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(15, 52, 96, 0.08);
+        }
+
+        .process-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+            color: var(--bg-white);
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 18px;
+        }
+
+        .process-card h3 {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+        }
+
+        .process-card p {
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        .booking-note {
+            margin-top: 18px;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.95rem;
         }
 
         .toast {
@@ -58,6 +242,37 @@
 
         .toast.success { background: #1f7a3a; }
         .toast.error { background: #b02a37; }
+
+        @media (max-width: 900px) {
+            .hero-highlights,
+            .process-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-intro h2 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .home-hero {
+                padding: 88px 20px 70px;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .hero-actions .cta-btn {
+                margin: 0;
+                width: 100%;
+            }
+
+            .section-intro h2 {
+                font-size: 1.7rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -75,59 +290,138 @@
                     <li><a href="./index about.html">About</a></li>
                     <li><a href="./Index Service.html">Services</a></li>
                     <li><a href="./Our Staff.html">Our Staffs</a></li>
-                    <li><a href="./News.html">News</a></li>
                     <li><a href="./Contact.html">Contact</a></li>
                     <li><a href="./Policy.html">Policy</a></li>
                 </ul>
             </nav>
         </div>
     </header>
-    <!-- News ticker (populated from news-data.js) -->
-    <div id="newsTicker" aria-live="polite" role="region"></div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     
     <main>
-        <section class="hero">
+        <section class="hero home-hero">
             <div class="container">
-                <h2>Welcome to Tech Bridge Liberia</h2>
-                <p>Your trusted partner for innovative technology solutions and professional services.</p>
-                <div>
+                <h2>Professional technology services built for schools, businesses, and organizations in Liberia.</h2>
+                <p>Tech Bridge Liberia delivers practical digital training, technical support, surveillance setup, and data solutions that help teams work smarter and operate with confidence.</p>
+                <div class="hero-actions">
+                    <a href="#booking" class="cta-btn">Book a Service</a>
                     <a href="./index about.html" class="cta-btn">Learn More</a>
                     <a href="./JoinUs.html" class="cta-btn secondary">Join Us</a>
                 </div>
+                <div class="hero-highlights">
+                    <div class="hero-highlight-card">
+                        <strong>Core Services</strong>
+                        <span>Web development, training, consultancy, CCTV, data services, and technical support.</span>
+                    </div>
+                    <div class="hero-highlight-card">
+                        <strong>Client-Focused</strong>
+                        <span>Solutions tailored for institutions, small businesses, and growing teams.</span>
+                    </div>
+                    <div class="hero-highlight-card">
+                        <strong>Fast Response</strong>
+                        <span>Clear communication, practical implementation, and dependable support.</span>
+                    </div>
+                </div>
             </div>
         </section>
+
         <section class="features">
+            <div class="section-intro">
+                <span class="section-kicker">What We Do Best</span>
+                <h2>Reliable services that strengthen your technology operations</h2>
+                <p>From staff training to infrastructure support, our work is designed to solve immediate technical problems and build long-term capability for your organization.</p>
+            </div>
             <div class="features-wrapper">
                 <div class="feature">
-                    <div class="feature-icon">💻</div>
-                    <h3>Computer Basics Training</h3>
-                    <p>We offer foundational training in computer literacy, ensuring learners gain essential skills in Computer science.</p>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">📹</div>
-                    <h3>CCTV Cameras Installation</h3>
-                    <p>We provide professional CCTV surveillance system installation for homes, businesses, and institutions.</p>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">🔧</div>
-                    <h3>Hardware and Software Troubleshooting</h3>
-                    <p>Our expert technicians diagnose and resolve issues in computer hardware and software, providing reliable support.</p>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">📊</div>
-                    <h3>Access Database Development</h3>
-                    <p>We develop tailored Microsoft Access databases for schools, clinics, and organizations to manage data efficiently.</p>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">📈</div>
-                    <h3>Data Collection and Analysis</h3>
-                    <p>We offer data collection and analysis services to help organizations make informed decisions based on accurate insights.</p>
+                    <div class="feature-icon">🌐</div>
+                    <span class="feature-meta">Web Solutions</span>
+                    <h3>Website Development</h3>
+                    <p>We design and build professional websites that strengthen your brand presence and support your business goals.</p>
+                    <a href="./Index Service.html" class="feature-link">Explore service</a>
                 </div>
                 <div class="feature">
                     <div class="feature-icon">📱</div>
-                    <h3>Social Media Management and marketing </h3
-                    <p>We provide comprehensive social media management and marketing services to enhance your online presence and engagement.</p>
+                    <span class="feature-meta">Modern Applications</span>
+                    <h3>Web App and PWA Development</h3>
+                    <p>We create responsive web applications and progressive web apps that improve access, productivity, and user experience.</p>
+                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <span class="feature-meta">Data Services</span>
+                    <h3>Data Collection, Cleaning, Visualization and Analysis</h3>
+                    <p>We help organizations gather, refine, visualize, and analyze data for reporting, planning, and better decision-making.</p>
+                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📘</div>
+                    <span class="feature-meta">Office Productivity</span>
+                    <h3>Microsoft Office Training</h3>
+                    <p>We teach Microsoft Office productivity tools from beginner to advanced level for students, teams, and professionals.</p>
+                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🧭</div>
+                    <span class="feature-meta">Advisory</span>
+                    <h3>IT Consultancy</h3>
+                    <p>We provide practical IT consultancy to help clients choose the right systems, tools, and digital strategies.</p>
+                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📹</div>
+                    <span class="feature-meta">Security</span>
+                    <h3>CCTV Cameras Installation</h3>
+                    <p>We provide professional CCTV surveillance system installation for homes, businesses, and institutions.</p>
+                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🖥️</div>
+                    <span class="feature-meta">Digital Skills</span>
+                    <h3>Digital Literacy Training</h3>
+                    <p>We equip learners with the practical digital skills needed to use computers, internet tools, and common workplace platforms.</p>
+                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔧</div>
+                    <span class="feature-meta">Technical Support</span>
+                    <h3>Software and Hardware Troubleshooting</h3>
+                    <p>Our technicians diagnose and resolve system issues quickly to restore performance and reduce downtime.</p>
+                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⬇️</div>
+                    <span class="feature-meta">System Setup</span>
+                    <h3>Software Installation</h3>
+                    <p>We install and configure essential software tools so your devices and teams are ready to work efficiently.</p>
+                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="home-process">
+            <div class="container">
+                <div class="section-intro">
+                    <span class="section-kicker">How We Work</span>
+                    <h2>A straightforward process from request to delivery</h2>
+                    <p>We keep projects simple, accountable, and results-driven so clients know what to expect at every stage.</p>
+                </div>
+                <div class="process-grid">
+                    <article class="process-card">
+                        <span class="process-number">01</span>
+                        <h3>Understand the Need</h3>
+                        <p>We review your technical challenge, service request, or training objective and recommend the right next step.</p>
+                    </article>
+                    <article class="process-card">
+                        <span class="process-number">02</span>
+                        <h3>Deliver the Solution</h3>
+                        <p>Our team implements the service with attention to quality, timelines, and the realities of your environment.</p>
+                    </article>
+                    <article class="process-card">
+                        <span class="process-number">03</span>
+                        <h3>Support the Outcome</h3>
+                        <p>We provide guidance, maintenance, and follow-up support so the work continues to deliver value after launch.</p>
+                    </article>
+                </div>
             </div>
         </section>
 
@@ -135,7 +429,7 @@
             <div class="container">
                 <div class="booking-content">
                     <h2>Book Our Services</h2>
-                    <p>Schedule a consultation or book one of our professional services today</p>
+                    <p>Schedule a consultation or request one of our professional services today.</p>
                     <form class="booking-form" id="bookingForm">
                         <div class="form-group">
                             <label for="name">Full Name</label>
@@ -151,22 +445,47 @@
                             <label for="phone">Phone Number</label>
                             <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" autocomplete="tel" required>
                         </div>
+
+                        <div class="form-group">
+                            <label for="preferredDate">Preferred Service Date</label>
+                            <input type="date" id="preferredDate" name="preferred_date" required>
+                        </div>
                         
                         <div class="form-group">
                             <label for="service">Service Type</label>
                             <select id="service" name="service" autocomplete="off" required>
                                 <option value="">-- Select a Service --</option>
-                                <option value="computer-training">Computer Basics Training</option>
+                                <option value="website-development">Website Development</option>
+                                <option value="web-app-pwa-development">Web App/PWA Development</option>
+                                <option value="data-services">Data Collection, Cleaning, Visualization and Analysis</option>
+                                <option value="microsoft-office-training">Microsoft Office Training</option>
+                                <option value="it-consultancy">IT Consultancy</option>
                                 <option value="cctv-installation">CCTV Cameras Installation</option>
-                                <option value="hardware-software">Hardware and Software Troubleshooting</option>
-                                <option value="access-database">Access Database Development</option>
-                                <option value="data-analysis">Data Collection and Analysis</option>
-                                <option value="social-media">Social Media Management & Marketing</option>
+                                <option value="digital-literacy">Digital Literacy Training</option>
+                                <option value="software-hardware-troubleshooting">Software and Hardware Troubleshooting</option>
+                                <option value="software-installation">Software Installation</option>
                             </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="paymentMethod">Preferred Payment Method</label>
+                            <select id="paymentMethod" name="payment_method" autocomplete="off" required>
+                                <option value="">-- Select Payment Method --</option>
+                                <option value="bank-transfer">Bank Transfer</option>
+                                <option value="mobile-money">Mobile Money</option>
+                                <option value="orange-money">Orange Money</option>
+                                <option value="cash">Cash</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="address">Address</label>
+                            <textarea id="address" name="address" rows="4" placeholder="Enter your address or service location" autocomplete="street-address" required></textarea>
                         </div>
                         
                         <button type="submit" class="submit-btn">Book Service</button>
                     </form>
+                    <p class="booking-note">Once submitted, our team will review your request and contact you with the next steps.</p>
                 </div>
             </div>
         </section>
@@ -208,6 +527,12 @@
         }
 
         const bookingForm = document.getElementById('bookingForm');
+        const preferredDateInput = document.getElementById('preferredDate');
+
+        if (preferredDateInput) {
+            preferredDateInput.min = new Date().toISOString().split('T')[0];
+        }
+
         if (bookingForm) {
             bookingForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -216,11 +541,18 @@
                 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2am5sdG5ndnZ6anhsbWx1eXlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzOTM3MTIsImV4cCI6MjA4NTk2OTcxMn0.bJyKQlQi2n9KDfd2q1OBb0gT2mYZHGLxWnbVIcu_Sxs';
                 const EMAIL_WEBHOOK_URL = 'https://tvjnltngvvzjxlmluyya.supabase.co/functions/v1/send-booking-email';
 
-                const payload = {
+                const dbPayload = {
                     full_name: document.getElementById('name').value.trim(),
                     email: document.getElementById('email').value.trim(),
                     phone: document.getElementById('phone').value.trim(),
                     service_type: document.getElementById('service').value
+                };
+
+                const emailPayload = {
+                    ...dbPayload,
+                    preferred_service_date: document.getElementById('preferredDate').value,
+                    payment_method: document.getElementById('paymentMethod').value,
+                    address: document.getElementById('address').value.trim()
                 };
 
                 try {
@@ -232,7 +564,7 @@
                             'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
                             'Prefer': 'return=representation'
                         },
-                        body: JSON.stringify(payload)
+                        body: JSON.stringify(dbPayload)
                     });
 
                     if (!response.ok) {
@@ -250,7 +582,7 @@
                                     'apikey': SUPABASE_ANON_KEY,
                                     'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
                                 },
-                                body: JSON.stringify(payload)
+                                body: JSON.stringify(emailPayload)
                             });
                             if (!emailResponse.ok) {
                                 const emailError = await emailResponse.text();
@@ -270,8 +602,6 @@
             });
         }
     </script>
-    <script src="./news-data.js"></script>
-    <script src="./news.js"></script>
     <script src="./active-nav.js"></script>
 </body>
 </html>

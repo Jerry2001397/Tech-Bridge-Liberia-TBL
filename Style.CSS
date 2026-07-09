@@ -282,17 +282,6 @@ nav {
   gap: 0;
 }
 
-.features::before {
-  content: 'Our Services';
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--secondary-color);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-}
-
 .features-wrapper {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -685,8 +674,8 @@ footer a:hover {
 }
 
 .booking-form {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
 
@@ -718,7 +707,8 @@ footer a:hover {
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   padding: 14px 18px;
   border: 2px solid var(--border-color);
   border-radius: 10px;
@@ -731,13 +721,15 @@ footer a:hover {
 }
 
 .form-group input:hover,
-.form-group select:hover {
+.form-group select:hover,
+.form-group textarea:hover {
   border-color: #bbb;
   background: #fafafa;
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   outline: none;
   border-color: var(--secondary-color);
   box-shadow: 0 0 0 4px rgba(233, 69, 96, 0.15);
@@ -747,6 +739,17 @@ footer a:hover {
 .form-group input::placeholder {
   color: #999;
   font-weight: 400;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.form-group.full-width,
+.booking-form .submit-btn,
+.booking-note {
+  grid-column: 1 / -1;
 }
 
 .form-group select {
@@ -834,17 +837,24 @@ footer a:hover {
     width: 260px;
     background: var(--bg-white);
     flex-direction: column;
-    padding: 8px 0;
-    box-shadow: var(--shadow-md);
+    padding: 0;
+    box-shadow: none;
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+    transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.2s ease;
     border-radius: 8px;
-    border: 1px solid var(--border-color);
+    border: 0;
   }
 
   nav.active {
     max-height: 500px;
+    padding: 8px 0;
+    box-shadow: var(--shadow-md);
+    opacity: 1;
+    pointer-events: auto;
+    border: 1px solid var(--border-color);
   }
 
   .nav-links {
@@ -926,6 +936,7 @@ footer a:hover {
   }
 
   .booking-form {
+    grid-template-columns: 1fr;
     gap: 18px;
   }
 
@@ -934,7 +945,8 @@ footer a:hover {
   }
 
   .form-group input,
-  .form-group select {
+  .form-group select,
+  .form-group textarea {
     padding: 12px 14px;
     font-size: 0.95rem;
   }
@@ -1052,7 +1064,8 @@ footer a:hover {
   }
 
   .form-group input,
-  .form-group select {
+  .form-group select,
+  .form-group textarea {
     padding: 12px 12px;
     font-size: 0.9rem;
     border-radius: 8px;

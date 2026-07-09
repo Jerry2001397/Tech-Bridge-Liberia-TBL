@@ -5,35 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Our Services - Tech Bridge Liberia</title>
   <link rel="stylesheet" href="./Style.CSS">
-  <style>
-    /* News ticker styles */
-    #newsTicker {
-        overflow: hidden;
-        background: #111;
-        color: #fff;
-        padding: 8px 0;
-        font-size: 16px;
-    }
-    .ticker-inner {
-        display: inline-block;
-        white-space: nowrap;
-        will-change: transform;
-        animation: scroll 18s linear infinite;
-    }
-    .ticker-item {
-        color: #fff;
-        text-decoration: none;
-        margin-right: 12px;
-        padding: 0 6px;
-    }
-    .ticker-item:hover { text-decoration: underline; }
-    .ticker-sep { color: #888; margin-right: 12px; }
-
-    @keyframes scroll {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-50%); }
-    }
-
+    <style>
     /* Services Page Specific Styles */
     .services-hero {
       background: linear-gradient(135deg, var(--primary-color) 0%, #1a4d7a 100%);
@@ -199,9 +171,29 @@
       font-size: 0.95rem;
       color: var(--text-light);
       line-height: 1.6;
-      margin: 0;
+      margin: 0 0 20px 0;
       font-weight: 500;
       font-weight: 500;
+    }
+
+    .service-book-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--secondary-color) 0%, #ff6b7a 100%);
+      color: var(--bg-white);
+      padding: 12px 22px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+      box-shadow: 0 10px 24px rgba(233, 69, 96, 0.18);
+    }
+
+    .service-book-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 28px rgba(233, 69, 96, 0.24);
+      background: linear-gradient(135deg, #d93753 0%, #ff7584 100%);
     }
 
     /* Responsive */
@@ -534,15 +526,11 @@
           <li><a href="./Index Service.html">Services</a></li>
           <li><a href="./Our Staff.html">Our Staffs</a></li>
           <li><a href="./Contact.html">Contact</a></li>
-            <li><a href="./News.html">News</a></li>
-            <li><a href="./Policy.html">Policy</a></li>
-          </ul>
+          <li><a href="./Policy.html">Policy</a></li>
+        </ul>
       </nav>
     </div>
   </header>
-
-  <!-- News ticker (populated from news-data.js) -->
-  <div id="newsTicker" aria-live="polite" role="region"></div>
 
   <main>
     <!-- Services Hero Section -->
@@ -565,6 +553,7 @@
             <div class="service-info">
               <h3 class="service-title">Computer Training</h3>
               <p class="service-desc">Comprehensive computer literacy and professional training programs for students and professionals at all levels.</p>
+              <a href="index.html#booking" class="service-book-btn">Book Service</a>
             </div>
           </div>
 
@@ -573,6 +562,7 @@
             <div class="service-info">
               <h3 class="service-title">Hardware Support</h3>
               <p class="service-desc">Expert hardware diagnostics and repair services to restore your systems to optimal performance.</p>
+              <a href="index.html#booking" class="service-book-btn">Book Service</a>
             </div>
           </div>
 
@@ -581,6 +571,7 @@
             <div class="service-info">
               <h3 class="service-title">Software Support</h3>
               <p class="service-desc">Professional software troubleshooting, installation, and optimization services for Windows systems.</p>
+              <a href="index.html#booking" class="service-book-btn">Book Service</a>
             </div>
           </div>
 
@@ -589,6 +580,7 @@
             <div class="service-info">
               <h3 class="service-title">Computer Lab Setup</h3>
               <p class="service-desc">Complete planning and installation of computer labs for educational institutions and organizations.</p>
+              <a href="index.html#booking" class="service-book-btn">Book Service</a>
             </div>
           </div>
 
@@ -597,6 +589,7 @@
             <div class="service-info">
               <h3 class="service-title">CCTV Installation</h3>
               <p class="service-desc">Professional surveillance system installation and configuration for homes and businesses.</p>
+              <a href="index.html#booking" class="service-book-btn">Book Service</a>
             </div>
           </div>
 
@@ -605,6 +598,7 @@
             <div class="service-info">
               <h3 class="service-title">Professional Training</h3>
               <p class="service-desc">Customized training programs in technical skills, software, and IT best practices for organizations.</p>
+              <a href="index.html#booking" class="service-book-btn">Book Service</a>
             </div>
           </div>
 
@@ -613,6 +607,7 @@
             <div class="service-info">
               <h3 class="service-title">Advanced CCTV Systems</h3>
               <p class="service-desc">High-security surveillance solutions with remote monitoring and advanced features for enterprises.</p>
+              <a href="index.html#booking" class="service-book-btn">Book Service</a>
             </div>
           </div>
 
@@ -621,20 +616,13 @@
             <div class="service-info">
               <h3 class="service-title">Maintenance & Support</h3>
               <p class="service-desc">Ongoing maintenance and client support services to keep your systems running smoothly.</p>
+              <a href="index.html#booking" class="service-book-btn">Book Service</a>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="services-cta">
-      <div class="container">
-        <h2>Ready to Get Started?</h2>
-        <p>Choose the perfect service for your organization and book with us today</p>
-        <a href="index.html#booking" class="cta-btn-primary">Book Us Now</a>
-      </div>
-    </section>
   </main>
 
   <footer>

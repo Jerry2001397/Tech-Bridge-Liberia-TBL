@@ -6,35 +6,6 @@
   <title>Contact Us - Tech Bridge Liberia</title>
   <link rel="stylesheet" href="./Style.CSS">
   <link rel="stylesheet" href="./Contact.CSS">
-  <style>
-    /* News ticker styles */
-    #newsTicker {
-        overflow: hidden;
-        background: #111;
-        color: #fff;
-        padding: 8px 0;
-        font-size: 16px;
-    }
-    .ticker-inner {
-        display: inline-block;
-        white-space: nowrap;
-        will-change: transform;
-        animation: scroll 18s linear infinite;
-    }
-    .ticker-item {
-        color: #fff;
-        text-decoration: none;
-        margin-right: 12px;
-        padding: 0 6px;
-    }
-    .ticker-item:hover { text-decoration: underline; }
-    .ticker-sep { color: #888; margin-right: 12px; }
-
-    @keyframes scroll {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-50%); }
-    }
-  </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
@@ -52,16 +23,12 @@
           <li><a href="./index about.html">About</a></li>
           <li><a href="./Index Service.html">Services</a></li>
           <li><a href="./Our Staff.html">Our Staffs</a></li>
-          <li><a href="./News.html">News</a></li>
           <li><a href="./Contact.html">Contact</a></li>
           <li><a href="./Policy.html">Policy</a></li>
         </ul>
       </nav>
     </div>
   </header>
-
-  <!-- News ticker (populated from news-data.js) -->
-  <div id="newsTicker" aria-live="polite" role="region"></div>
 
   <main>
     <!-- Contact Hero Section -->
@@ -176,27 +143,39 @@
     <!-- FAQ Section -->
     <section class="faq-section">
       <div class="container">
-        <h2>Frequently Asked Questions</h2>
-        <div class="faq-grid">
-          <div class="faq-item">
-            <h3>What services do you offer?</h3>
-            <p>We provide comprehensive IT services including computer training, hardware support, software solutions, CCTV installation, and professional training programs.</p>
-          </div>
+        <div class="faq-header">
+          <h2>Frequently Asked Questions</h2>
+          <p>Find clear answers to common questions about our services, response times, support options, and payment arrangements.</p>
+        </div>
 
-          <div class="faq-item">
-            <h3>How quickly can you respond?</h3>
-            <p>We aim to respond to all inquiries within 24 hours during business days. Urgent matters may be addressed within 2-4 hours.</p>
-          </div>
+        <div class="faq-list" role="list">
+          <details class="faq-item" open>
+            <summary>What services do you offer?</summary>
+            <div class="faq-answer">
+              <p>We provide website development, web app and PWA development, data collection and analysis services, Microsoft Office training, IT consultancy, CCTV camera installation, digital literacy training, software and hardware troubleshooting, and software installation.</p>
+            </div>
+          </details>
 
-          <div class="faq-item">
-            <h3>Do you offer remote support?</h3>
-            <p>Yes, we provide remote technical support for software issues and consultations. On-site support is available for hardware installations.</p>
-          </div>
+          <details class="faq-item">
+            <summary>How quickly can you respond?</summary>
+            <div class="faq-answer">
+              <p>We aim to respond to all inquiries within 24 hours on business days. For urgent technical matters, we may respond within 2 to 4 hours depending on the request and availability.</p>
+            </div>
+          </details>
 
-          <div class="faq-item">
-            <h3>What are your payment terms?</h3>
-            <p>We accept various payment methods including bank transfers, mobile money, and cash. Payment terms can be negotiated based on project scope.</p>
-          </div>
+          <details class="faq-item">
+            <summary>Do you offer remote support?</summary>
+            <div class="faq-answer">
+              <p>Yes. We provide remote support for eligible software issues, technical guidance, and consultations. On-site support is available for hardware work, installations, inspections, and location-based services.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary>What are your payment terms?</summary>
+            <div class="faq-answer">
+              <p>We accept bank transfers, mobile money, and cash payments. Final payment terms depend on the service scope, project duration, and any materials or on-site requirements involved.</p>
+            </div>
+          </details>
         </div>
       </div>
     </section>

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
 const corsHeaders = {
@@ -34,6 +35,9 @@ serve(async (req) => {
   const email = body.email ?? "";
   const phone = body.phone ?? "";
   const serviceType = body.service_type ?? "";
+  const preferredServiceDate = body.preferred_service_date ?? "";
+  const paymentMethod = body.payment_method ?? "";
+  const address = body.address ?? "";
 
   const message = {
     personalizations: [
@@ -51,7 +55,10 @@ serve(async (req) => {
           `Name: ${fullName}\n` +
           `Email: ${email}\n` +
           `Phone: ${phone}\n` +
-          `Service: ${serviceType}\n`
+          `Service: ${serviceType}\n` +
+          `Preferred date: ${preferredServiceDate}\n` +
+          `Payment method: ${paymentMethod}\n` +
+          `Address: ${address}\n`
       }
     ]
   };
