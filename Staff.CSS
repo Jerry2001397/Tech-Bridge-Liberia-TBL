@@ -227,8 +227,29 @@
   padding: 32px 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   flex-grow: 1;
+}
+
+.staff-profile-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(15, 52, 96, 0.08);
+}
+
+.staff-profile-row:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.staff-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--secondary-color);
 }
 
 .staff-name {
@@ -249,7 +270,7 @@
 }
 
 .staff-details {
-  margin-top: 12px;
+  margin-top: 0;
   flex-grow: 1;
 }
 
@@ -268,6 +289,23 @@
   line-height: 1.6;
   padding-left: 20px;
   position: relative;
+}
+
+.staff-contact {
+  margin: 0;
+  color: var(--text-light);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.staff-contact a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.staff-contact a:hover {
+  color: var(--secondary-color);
 }
 
 .staff-details li::before {
