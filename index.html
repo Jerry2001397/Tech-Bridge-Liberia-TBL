@@ -8,22 +8,19 @@
     <style>
         .home-hero {
             padding: 110px 20px 90px;
-            background: url("./image file/New img/Consultacy.png") center center / cover no-repeat;
+            background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+            border-bottom: 1px solid rgba(15, 52, 96, 0.08);
         }
 
-        .hero-badge {
-            display: inline-flex;
+        .home-hero .container {
+            flex-direction: column;
+            max-width: 920px;
             align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            font-size: 0.85rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin-bottom: 22px;
+        }
+
+        .hero-copy {
+            max-width: 700px;
+            text-align: center;
         }
 
         .hero-actions {
@@ -34,83 +31,93 @@
             margin-bottom: 44px;
         }
 
+        .hero-copy .hero-actions {
+            justify-content: center;
+        }
+
         .home-hero h2,
         .home-hero p,
-        .home-hero .cta-btn,
-        .home-hero .hero-highlight-card strong,
-        .home-hero .hero-highlight-card span {
-            color: #000;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.95), 0 0 22px rgba(255, 255, 255, 0.75);
+        .home-hero .cta-btn {
+            color: inherit;
+        }
+
+        .home-hero h2 {
+            max-width: 24ch;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-shadow: none;
+            line-height: 1.2;
         }
 
         .home-hero p {
-            font-weight: 600;
-            background: rgba(255, 255, 255, 0.72);
-            padding: 14px 18px;
-            border-radius: 14px;
-            box-shadow: 0 10px 26px rgba(255, 255, 255, 0.38);
-            text-shadow: 0 0 12px rgba(255, 255, 255, 1), 0 0 28px rgba(255, 255, 255, 0.9), 0 0 42px rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
+            text-shadow: none;
+            max-width: 56ch;
+            color: var(--text-light);
         }
 
         .home-hero .cta-btn {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(230, 242, 255, 0.92) 100%);
-            border-color: rgba(255, 255, 255, 0.98);
+            background: var(--primary-color);
+            border-color: var(--primary-color);
             border-width: 1px;
-            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16), 0 0 24px rgba(255, 255, 255, 0.65);
-            backdrop-filter: blur(10px);
+            color: #fff;
+            box-shadow: 0 14px 28px rgba(15, 52, 96, 0.16);
         }
 
         .home-hero .cta-btn.secondary {
-            background: linear-gradient(135deg, rgba(255, 240, 244, 0.95) 0%, rgba(255, 224, 230, 0.92) 100%);
-            border-color: rgba(255, 240, 244, 0.98);
-        }
-
-        .hero-actions .cta-btn:first-child {
-            background: linear-gradient(135deg, #fff7da 0%, #ffe08a 100%);
-            border-color: rgba(255, 234, 168, 0.96);
-            box-shadow: 0 16px 34px rgba(160, 118, 0, 0.24), 0 0 26px rgba(255, 232, 163, 0.72);
+            background: transparent;
+            border-color: rgba(15, 52, 96, 0.18);
+            color: var(--primary-color);
         }
 
         .home-hero .cta-btn:hover,
         .home-hero .cta-btn.secondary:hover {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(241, 247, 255, 0.98) 100%);
-            color: #000;
-            border-color: rgba(255, 255, 255, 1);
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 18px 38px rgba(0, 0, 0, 0.2), 0 0 28px rgba(255, 255, 255, 0.78);
+            background: #143f72;
+            color: #fff;
+            border-color: #143f72;
+            transform: translateY(-3px);
+            box-shadow: 0 18px 32px rgba(15, 52, 96, 0.18);
         }
 
-        .hero-actions .cta-btn:first-child:hover {
-            background: linear-gradient(135deg, #fff8e5 0%, #ffd861 100%);
-            border-color: #ffe08a;
-            box-shadow: 0 18px 36px rgba(160, 118, 0, 0.28), 0 0 30px rgba(255, 229, 148, 0.88);
-        }
-
-        .hero-highlights {
+        .hero-trust-strip {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 18px;
             width: 100%;
+            margin-top: 6px;
         }
 
-        .hero-highlight-card {
-            background: rgba(255, 255, 255, 0.74);
-            border: 1px solid rgba(255, 255, 255, 0.88);
+        .hero-trust-item {
+            background: #fff;
+            border: 1px solid rgba(15, 52, 96, 0.12);
             border-radius: 16px;
-            padding: 22px 18px;
+            padding: 24px 22px;
             text-align: left;
-            backdrop-filter: blur(8px);
+            min-height: 170px;
+            box-shadow: 0 14px 28px rgba(15, 52, 96, 0.1);
+            color: var(--primary-color);
         }
 
-        .hero-highlight-card strong {
+        .hero-trust-item strong {
             display: block;
-            font-size: 1.6rem;
-            margin-bottom: 8px;
+            font-size: 1rem;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            color: var(--primary-color);
+            line-height: 1.35;
         }
 
-        .hero-highlight-card span {
-            font-size: 0.95rem;
-            opacity: 0.92;
+        .hero-trust-item span {
+            font-size: 1rem;
+            opacity: 1;
+            line-height: 1.75;
+            color: #334e68;
+            display: block;
         }
 
         .section-intro {
@@ -150,6 +157,22 @@
             text-transform: uppercase;
         }
 
+        .feature-icon {
+            width: auto;
+            min-width: 72px;
+            height: 40px;
+            padding: 0 14px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+            box-shadow: 0 12px 24px rgba(15, 52, 96, 0.12);
+        }
+
         .feature-link {
             margin-top: auto;
             color: var(--primary-color);
@@ -163,7 +186,9 @@
 
         .home-process {
             padding: 90px 20px;
-            background: linear-gradient(135deg, rgba(15, 52, 96, 0.04) 0%, rgba(0, 212, 255, 0.08) 100%);
+            background: var(--bg-light);
+            border-top: 1px solid rgba(15, 52, 96, 0.06);
+            border-bottom: 1px solid rgba(15, 52, 96, 0.06);
         }
 
         .home-process .container {
@@ -193,7 +218,7 @@
             width: 46px;
             height: 46px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+            background: var(--primary-color);
             color: var(--bg-white);
             font-size: 1.1rem;
             font-weight: 800;
@@ -244,13 +269,31 @@
         .toast.error { background: #b02a37; }
 
         @media (max-width: 900px) {
-            .hero-highlights,
+            .hero-trust-strip,
             .process-grid {
                 grid-template-columns: 1fr;
             }
 
+            .hero-trust-item {
+                min-height: 0;
+            }
+
             .section-intro h2 {
                 font-size: 2rem;
+            }
+
+            .home-hero .container,
+            .hero-copy {
+                align-items: center;
+                text-align: center;
+            }
+
+            .hero-copy .hero-actions {
+                justify-content: center;
+            }
+
+            .home-hero h2 {
+                max-width: none;
             }
         }
 
@@ -261,12 +304,12 @@
 
             .hero-actions {
                 flex-direction: column;
-                align-items: stretch;
+                align-items: center;
             }
 
             .hero-actions .cta-btn {
                 margin: 0;
-                width: 100%;
+                width: min(100%, 280px);
             }
 
             .section-intro h2 {
@@ -301,25 +344,26 @@
     <main>
         <section class="hero home-hero">
             <div class="container">
-                <h2>Professional technology services built for schools, businesses, and organizations in Liberia.</h2>
-                <p>Tech Bridge Liberia delivers practical digital training, technical support, surveillance setup, and data solutions that help teams work smarter and operate with confidence.</p>
-                <div class="hero-actions">
-                    <a href="#booking" class="cta-btn">Book a Service</a>
-                    <a href="./index about.html" class="cta-btn">Learn More</a>
-                    <a href="./JoinUs.html" class="cta-btn secondary">Join Us</a>
+                <div class="hero-copy">
+                    <h2>We provide dependable support for<br>individuals, businesses, government institutions, and organizations.</h2>
+                    <p>We help schools, businesses, and institutions strengthen operations with practical digital services, reliable technical support, and implementation built for local realities.</p>
+                    <div class="hero-actions">
+                        <a href="#booking" class="cta-btn">Book a Consultation</a>
+                        <a href="./Index Service.html" class="cta-btn secondary">View Services</a>
+                    </div>
                 </div>
-                <div class="hero-highlights">
-                    <div class="hero-highlight-card">
-                        <strong>Core Services</strong>
-                        <span>Web development, training, consultancy, CCTV, data services, and technical support.</span>
+                <div class="hero-trust-strip" aria-label="Service strengths">
+                    <div class="hero-trust-item">
+                        <strong>Operational Support</strong>
+                        <span>Responsive technical assistance for teams that need systems working without delay.</span>
                     </div>
-                    <div class="hero-highlight-card">
-                        <strong>Client-Focused</strong>
-                        <span>Solutions tailored for institutions, small businesses, and growing teams.</span>
+                    <div class="hero-trust-item">
+                        <strong>Digital Capacity</strong>
+                        <span>Training and implementation that improve staff capability and day-to-day productivity.</span>
                     </div>
-                    <div class="hero-highlight-card">
-                        <strong>Fast Response</strong>
-                        <span>Clear communication, practical implementation, and dependable support.</span>
+                    <div class="hero-trust-item">
+                        <strong>Structured Delivery</strong>
+                        <span>Clear scope, disciplined execution, and service recommendations aligned to your goals.</span>
                     </div>
                 </div>
             </div>
@@ -333,63 +377,63 @@
             </div>
             <div class="features-wrapper">
                 <div class="feature">
-                    <div class="feature-icon">🌐</div>
+                    <div class="feature-icon">Web</div>
                     <span class="feature-meta">Web Solutions</span>
                     <h3>Website Development</h3>
                     <p>We design and build professional websites that strengthen your brand presence and support your business goals.</p>
                     <a href="./Index Service.html" class="feature-link">Explore service</a>
                 </div>
                 <div class="feature">
-                    <div class="feature-icon">📱</div>
+                    <div class="feature-icon">App</div>
                     <span class="feature-meta">Modern Applications</span>
                     <h3>Web App and PWA Development</h3>
                     <p>We create responsive web applications and progressive web apps that improve access, productivity, and user experience.</p>
                     <a href="./Index Service.html" class="feature-link">Explore service</a>
                 </div>
                 <div class="feature">
-                    <div class="feature-icon">📊</div>
+                    <div class="feature-icon">Data</div>
                     <span class="feature-meta">Data Services</span>
                     <h3>Data Collection, Cleaning, Visualization and Analysis</h3>
                     <p>We help organizations gather, refine, visualize, and analyze data for reporting, planning, and better decision-making.</p>
                     <a href="./Index Service.html" class="feature-link">Explore service</a>
                 </div>
                 <div class="feature">
-                    <div class="feature-icon">📘</div>
+                    <div class="feature-icon">MS</div>
                     <span class="feature-meta">Office Productivity</span>
                     <h3>Microsoft Office Training</h3>
                     <p>We teach Microsoft Office productivity tools from beginner to advanced level for students, teams, and professionals.</p>
                     <a href="./Index Service.html" class="feature-link">Explore service</a>
                 </div>
                 <div class="feature">
-                    <div class="feature-icon">🧭</div>
+                    <div class="feature-icon">IT</div>
                     <span class="feature-meta">Advisory</span>
                     <h3>IT Consultancy</h3>
                     <p>We provide practical IT consultancy to help clients choose the right systems, tools, and digital strategies.</p>
                     <a href="./Index Service.html" class="feature-link">Explore service</a>
                 </div>
                 <div class="feature">
-                    <div class="feature-icon">📹</div>
+                    <div class="feature-icon">CCTV</div>
                     <span class="feature-meta">Security</span>
                     <h3>CCTV Cameras Installation</h3>
                     <p>We provide professional CCTV surveillance system installation for homes, businesses, and institutions.</p>
                     <a href="./Index Service.html" class="feature-link">Explore service</a>
                 </div>
                 <div class="feature">
-                    <div class="feature-icon">🖥️</div>
+                    <div class="feature-icon">ICT</div>
                     <span class="feature-meta">Digital Skills</span>
                     <h3>Digital Literacy Training</h3>
                     <p>We equip learners with the practical digital skills needed to use computers, internet tools, and common workplace platforms.</p>
                     <a href="./Index Service.html" class="feature-link">Explore service</a>
                 </div>
                 <div class="feature">
-                    <div class="feature-icon">🔧</div>
+                    <div class="feature-icon">Tech</div>
                     <span class="feature-meta">Technical Support</span>
                     <h3>Software and Hardware Troubleshooting</h3>
                     <p>Our technicians diagnose and resolve system issues quickly to restore performance and reduce downtime.</p>
                     <a href="./Index Service.html" class="feature-link">Explore service</a>
                 </div>
                 <div class="feature">
-                    <div class="feature-icon">⬇️</div>
+                    <div class="feature-icon">Setup</div>
                     <span class="feature-meta">System Setup</span>
                     <h3>Software Installation</h3>
                     <p>We install and configure essential software tools so your devices and teams are ready to work efficiently.</p>
