@@ -20,7 +20,24 @@
 
         .hero-copy {
             max-width: 700px;
+            width: 100%;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            padding: 24px 12px 18px;
+            isolation: isolate;
+        }
+
+        .hero-copy::before {
+            content: "";
+            position: absolute;
+            inset: -12px;
+            background: url("./New image file/TBL LOGO.png") center/cover no-repeat;
+            opacity: 0.08;
+            z-index: -1;
+            pointer-events: none;
         }
 
         .hero-actions {
@@ -28,6 +45,7 @@
             flex-wrap: wrap;
             justify-content: center;
             gap: 14px;
+            margin-top: 18px;
             margin-bottom: 44px;
         }
 
@@ -43,7 +61,7 @@
 
         .home-hero h2 {
             max-width: 24ch;
-            margin-bottom: 20px;
+            margin-bottom: 0;
             color: var(--primary-color);
             text-shadow: none;
             line-height: 1.2;
@@ -174,7 +192,6 @@
         }
 
         .feature-link {
-            margin-top: auto;
             color: var(--primary-color);
             font-weight: 700;
             text-decoration: none;
@@ -182,6 +199,37 @@
 
         .feature-link:hover {
             color: var(--secondary-color);
+        }
+
+        .feature-actions {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .feature-book-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 18px;
+            border-radius: 999px;
+            background: var(--secondary-color);
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 10px 20px rgba(233, 69, 96, 0.2);
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .feature-book-btn:hover {
+            background: #d93753;
+            transform: translateY(-2px);
+            box-shadow: 0 14px 24px rgba(233, 69, 96, 0.24);
         }
 
         .home-process {
@@ -302,9 +350,28 @@
                 padding: 88px 20px 70px;
             }
 
+            .hero-copy {
+                padding: 18px 8px 12px;
+            }
+
+            .hero-copy::before {
+                inset: -8px;
+                background-size: cover;
+            }
+
             .hero-actions {
                 flex-direction: column;
                 align-items: center;
+            }
+
+            .feature-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .feature-book-btn,
+            .feature-link {
+                text-align: center;
             }
 
             .hero-actions .cta-btn {
@@ -345,8 +412,7 @@
         <section class="hero home-hero">
             <div class="container">
                 <div class="hero-copy">
-                    <h2>We provide dependable support for<br>individuals, businesses, government institutions, and organizations.</h2>
-                    <p>We help schools, businesses, and institutions strengthen operations with practical digital services, reliable technical support, and implementation built for local realities.</p>
+                    <h2>We provide dependable IT/ICT support for<br>individuals, businesses, government institutions, and organizations.</h2>
                     <div class="hero-actions">
                         <a href="#booking" class="cta-btn">Book a Consultation</a>
                         <a href="./Index Service.html" class="cta-btn secondary">View Services</a>
@@ -381,63 +447,90 @@
                     <span class="feature-meta">Web Solutions</span>
                     <h3>Website Development</h3>
                     <p>We design and build professional websites that strengthen your brand presence and support your business goals.</p>
-                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                    <div class="feature-actions">
+                        <a href="./Index Service.html" class="feature-link">Explore service</a>
+                        <a href="#booking" class="feature-book-btn">Book Now</a>
+                    </div>
                 </div>
                 <div class="feature">
                     <div class="feature-icon">App</div>
                     <span class="feature-meta">Modern Applications</span>
                     <h3>Web App and PWA Development</h3>
                     <p>We create responsive web applications and progressive web apps that improve access, productivity, and user experience.</p>
-                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                    <div class="feature-actions">
+                        <a href="./Index Service.html" class="feature-link">Explore service</a>
+                        <a href="#booking" class="feature-book-btn">Book Now</a>
+                    </div>
                 </div>
                 <div class="feature">
                     <div class="feature-icon">Data</div>
                     <span class="feature-meta">Data Services</span>
                     <h3>Data Collection, Cleaning, Visualization and Analysis</h3>
                     <p>We help organizations gather, refine, visualize, and analyze data for reporting, planning, and better decision-making.</p>
-                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                    <div class="feature-actions">
+                        <a href="./Index Service.html" class="feature-link">Explore service</a>
+                        <a href="#booking" class="feature-book-btn">Book Now</a>
+                    </div>
                 </div>
                 <div class="feature">
                     <div class="feature-icon">MS</div>
                     <span class="feature-meta">Office Productivity</span>
                     <h3>Microsoft Office Training</h3>
                     <p>We teach Microsoft Office productivity tools from beginner to advanced level for students, teams, and professionals.</p>
-                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                    <div class="feature-actions">
+                        <a href="./Index Service.html" class="feature-link">Explore service</a>
+                        <a href="#booking" class="feature-book-btn">Book Now</a>
+                    </div>
                 </div>
                 <div class="feature">
                     <div class="feature-icon">IT</div>
                     <span class="feature-meta">Advisory</span>
                     <h3>IT Consultancy</h3>
                     <p>We provide practical IT consultancy to help clients choose the right systems, tools, and digital strategies.</p>
-                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                    <div class="feature-actions">
+                        <a href="./Index Service.html" class="feature-link">Explore service</a>
+                        <a href="#booking" class="feature-book-btn">Book Now</a>
+                    </div>
                 </div>
                 <div class="feature">
                     <div class="feature-icon">CCTV</div>
                     <span class="feature-meta">Security</span>
                     <h3>CCTV Cameras Installation</h3>
                     <p>We provide professional CCTV surveillance system installation for homes, businesses, and institutions.</p>
-                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                    <div class="feature-actions">
+                        <a href="./Index Service.html" class="feature-link">Explore service</a>
+                        <a href="#booking" class="feature-book-btn">Book Now</a>
+                    </div>
                 </div>
                 <div class="feature">
                     <div class="feature-icon">ICT</div>
                     <span class="feature-meta">Digital Skills</span>
                     <h3>Digital Literacy Training</h3>
                     <p>We equip learners with the practical digital skills needed to use computers, internet tools, and common workplace platforms.</p>
-                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                    <div class="feature-actions">
+                        <a href="./Index Service.html" class="feature-link">Explore service</a>
+                        <a href="#booking" class="feature-book-btn">Book Now</a>
+                    </div>
                 </div>
                 <div class="feature">
                     <div class="feature-icon">Tech</div>
                     <span class="feature-meta">Technical Support</span>
                     <h3>Software and Hardware Troubleshooting</h3>
                     <p>Our technicians diagnose and resolve system issues quickly to restore performance and reduce downtime.</p>
-                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                    <div class="feature-actions">
+                        <a href="./Index Service.html" class="feature-link">Explore service</a>
+                        <a href="#booking" class="feature-book-btn">Book Now</a>
+                    </div>
                 </div>
                 <div class="feature">
                     <div class="feature-icon">Setup</div>
                     <span class="feature-meta">System Setup</span>
                     <h3>Software Installation</h3>
                     <p>We install and configure essential software tools so your devices and teams are ready to work efficiently.</p>
-                    <a href="./Index Service.html" class="feature-link">Explore service</a>
+                    <div class="feature-actions">
+                        <a href="./Index Service.html" class="feature-link">Explore service</a>
+                        <a href="#booking" class="feature-book-btn">Book Now</a>
+                    </div>
                 </div>
             </div>
         </section>

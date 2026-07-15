@@ -639,6 +639,7 @@ footer a:hover {
 .booking-content {
   background: var(--bg-white);
   padding: 60px 50px;
+  width: 100%;
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(0, 212, 255, 0.2);
@@ -654,6 +655,20 @@ footer a:hover {
   right: 0;
   height: 4px;
   background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+}
+
+.booking-content::after {
+  content: '';
+  position: absolute;
+  inset: 18px;
+  background: url("./New image file/TBL LOGO.png") center/contain no-repeat;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.booking-content > * {
+  position: relative;
+  z-index: 1;
 }
 
 .booking-content h2 {
@@ -684,6 +699,7 @@ footer a:hover {
   flex-direction: column;
   gap: 10px;
   position: relative;
+  min-width: 0;
 }
 
 .form-group label {
@@ -709,6 +725,8 @@ footer a:hover {
 .form-group input,
 .form-group select,
 .form-group textarea {
+  width: 100%;
+  max-width: 100%;
   padding: 14px 18px;
   border: 2px solid var(--border-color);
   border-radius: 10px;
@@ -1044,6 +1062,15 @@ footer a:hover {
     border-radius: 12px;
   }
 
+  .booking-content::after {
+    inset: 14px;
+    background-size: 92% auto;
+  }
+
+  .booking .container {
+    padding: 0;
+  }
+
   .booking-content h2 {
     font-size: 1.4rem;
     margin-bottom: 8px;
@@ -1056,6 +1083,12 @@ footer a:hover {
 
   .booking-form {
     gap: 16px;
+  }
+
+  .booking-form,
+  .form-group,
+  .submit-btn {
+    width: 100%;
   }
 
   .form-group label {

@@ -17,6 +17,26 @@
       margin-top: 0;
     }
 
+    .services-hero-content {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 56px 32px;
+      isolation: isolate;
+    }
+
+    .services-hero-content::before {
+      content: '';
+      position: absolute;
+      inset: -20px;
+      background: url("./New image file/TBL LOGO.png") center/cover no-repeat;
+      opacity: 0.12;
+      z-index: -1;
+      pointer-events: none;
+    }
+
     .services-hero::before {
       content: '';
       position: absolute;
@@ -198,6 +218,14 @@
 
     /* Responsive */
     @media (max-width: 768px) {
+      .services-hero-content {
+        padding: 38px 20px;
+      }
+
+      .services-hero-content::before {
+        inset: -12px;
+      }
+
       .services-hero h1 {
         font-size: 2rem;
       }
@@ -535,8 +563,10 @@
   <main>
     <!-- Services Hero Section -->
     <section class="services-hero">
-      <h1>Our Professional Services</h1>
-      <p>Comprehensive technology solutions tailored to meet your organization's unique needs</p>
+      <div class="services-hero-content">
+        <h1>Our Professional Services</h1>
+        <p>Comprehensive technology solutions tailored to meet your organization's unique needs</p>
+      </div>
     </section>
 
     <!-- Services Content Section -->
