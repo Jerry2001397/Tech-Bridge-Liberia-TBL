@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Portfolia - Tech Bridge Liberia</title>
+    <link rel="stylesheet" href="./Style.CSS">
+    <style>
+        .portfolio-hero {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1a4d7a 100%);
+            color: var(--bg-white);
+            padding: 90px 20px;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .portfolio-hero::before {
+            content: '';
+            position: absolute;
+            top: -120px;
+            right: -100px;
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            background: rgba(0, 212, 255, 0.12);
+        }
+
+        .portfolio-hero .container,
+        .portfolio-content .container,
+        .portfolio-results .container,
+        .portfolio-cta .container {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .portfolio-hero .container {
+            position: relative;
+            z-index: 1;
+            max-width: 860px;
+            text-align: center;
+        }
+
+        .portfolio-hero h2 {
+            font-size: 3rem;
+            line-height: 1.15;
+            margin-bottom: 18px;
+            color: var(--bg-white);
+        }
+
+        .portfolio-hero p {
+            max-width: 680px;
+            margin: 0 auto;
+            font-size: 1.12rem;
+            color: rgba(255, 255, 255, 0.92);
+        }
+
+        .portfolio-content {
+            padding: 80px 20px;
+            background: var(--bg-white);
+        }
+
+        .portfolio-intro {
+            max-width: 760px;
+            margin: 0 auto 44px;
+            text-align: center;
+        }
+
+        .portfolio-intro h2 {
+            color: var(--primary-color);
+            font-size: 2.3rem;
+            margin-bottom: 14px;
+        }
+
+        .portfolio-intro p {
+            color: var(--text-light);
+            font-size: 1.02rem;
+            line-height: 1.75;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 28px;
+            width: 100%;
+        }
+
+        .portfolio-projects {
+            width: 100%;
+            display: grid;
+            gap: 28px;
+        }
+
+        .portfolio-project-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+        }
+
+        .project-item {
+            position: relative;
+        }
+
+        .project-toggle-btn {
+            width: 100%;
+            border: 1px solid rgba(15, 52, 96, 0.12);
+            background: var(--bg-white);
+            color: var(--primary-color);
+            border-radius: 999px;
+            padding: 12px 20px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .project-toggle-btn:hover,
+        .project-toggle-btn.is-active {
+            background: var(--secondary-color);
+            color: var(--bg-white);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(233, 69, 96, 0.2);
+        }
+
+        .project-panel {
+            display: none;
+            position: absolute;
+            top: calc(100% + 12px);
+            left: 0;
+            width: 100%;
+            z-index: 5;
+        }
+
+        .project-panel[hidden] {
+            display: none !important;
+        }
+
+        .project-panel.is-active {
+            display: block;
+        }
+
+        .portfolio-card {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            border: 1px solid rgba(15, 52, 96, 0.08);
+            border-radius: 18px;
+            padding: 30px 26px;
+            box-shadow: 0 14px 28px rgba(15, 52, 96, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .portfolio-tag {
+            display: inline-flex;
+            width: fit-content;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(233, 69, 96, 0.1);
+            color: var(--secondary-color);
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .portfolio-card h3 {
+            color: var(--primary-color);
+            font-size: 1.3rem;
+            margin: 0;
+        }
+
+        .portfolio-card p {
+            color: var(--text-light);
+            line-height: 1.7;
+            margin: 0;
+        }
+
+        .portfolio-list {
+            list-style: none;
+            display: grid;
+            gap: 10px;
+            padding: 0;
+            margin: 0;
+        }
+
+        .portfolio-list li {
+            color: var(--text-dark);
+            padding-left: 22px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .portfolio-list li::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            position: absolute;
+            left: 0;
+            top: 10px;
+        }
+
+        .portfolio-results {
+            padding: 80px 20px;
+            background: var(--bg-light);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            width: 100%;
+        }
+
+        .result-card {
+            background: var(--bg-white);
+            border-radius: 16px;
+            padding: 28px 24px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(15, 52, 96, 0.08);
+        }
+
+        .result-card strong {
+            display: block;
+            color: var(--secondary-color);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .result-card span {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .portfolio-cta {
+            padding: 80px 20px;
+            background: linear-gradient(135deg, rgba(15, 52, 96, 0.08) 0%, rgba(0, 212, 255, 0.08) 100%);
+        }
+
+        .portfolio-cta-box {
+            max-width: 760px;
+            margin: 0 auto;
+            background: var(--bg-white);
+            border-radius: 20px;
+            padding: 42px 36px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(15, 52, 96, 0.08);
+        }
+
+        .portfolio-cta-box h2 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 14px;
+        }
+
+        .portfolio-cta-box p {
+            color: var(--text-light);
+            margin-bottom: 24px;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 768px) {
+            .portfolio-hero {
+                padding: 70px 20px;
+            }
+
+            .portfolio-hero h2 {
+                font-size: 2.2rem;
+            }
+
+            .portfolio-intro h2,
+            .portfolio-cta-box h2 {
+                font-size: 1.8rem;
+            }
+
+            .portfolio-cta-box {
+                padding: 32px 24px;
+            }
+
+            .project-toggle-btn {
+                width: 100%;
+            }
+
+            .project-panel {
+                position: static;
+                margin-top: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .portfolio-hero {
+                padding: 54px 16px;
+            }
+
+            .portfolio-hero h2 {
+                font-size: 1.8rem;
+            }
+
+            .portfolio-content,
+            .portfolio-results,
+            .portfolio-cta {
+                padding: 50px 16px;
+            }
+
+            .portfolio-card,
+            .result-card,
+            .portfolio-cta-box {
+                padding: 24px 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1 class="logo">Tech Bridge LIberia-TBL</h1>
+            <button class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <nav id="navMenu">
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="./index about.html">About</a></li>
+                    <li><a href="./Index Service.html">Services</a></li>
+                    <li><a href="./Portfolia.html">Our Portfolia</a></li>
+                    <li><a href="./Our Staff.html">Our Staffs</a></li>
+                    <li><a href="./Contact.html">Contact</a></li>
+                    <li><a href="./Policy.html">Policy</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="portfolio-hero">
+            <div class="container">
+                <h2>Our Portfolia</h2>
+                <p>Selected examples of the practical digital solutions, training programs, and technical support work we deliver for institutions, businesses, and community-focused teams.</p>
+            </div>
+        </section>
+
+        <section class="portfolio-content">
+            <div class="container">
+                <div class="portfolio-intro">
+                    <h2>Projects We Has Executed</h2>
+                    <p>Select a project category to view the types of work we have delivered for clients and institutions.</p>
+                </div>
+
+                <div class="portfolio-projects">
+                    <div class="portfolio-project-buttons" aria-label="Portfolio project categories">
+                        <div class="project-item">
+                            <button class="project-toggle-btn" type="button" data-project="website" aria-expanded="false" aria-controls="project-website">Website Project</button>
+                            <article class="portfolio-card project-panel" id="project-website" data-project-panel="website" hidden>
+                                <span class="portfolio-tag">Web Solutions</span>
+                                <h3>Website Projects</h3>
+                                <p>Live website projects designed and delivered for real users and business visibility.</p>
+                                <ul class="portfolio-list">
+                                    <li><a href="https://theplug-smoky.vercel.app/" target="_blank" rel="noopener noreferrer">The Plug</a> - E-commerce platform</li>
+                                    <li>Website Project Name Coming Soon</li>
+                                    <li>Website Project Name Coming Soon</li>
+                                    <li>Website Project Name Coming Soon</li>
+                                </ul>
+                            </article>
+                        </div>
+
+                        <div class="project-item">
+                            <button class="project-toggle-btn" type="button" data-project="cctv" aria-expanded="false" aria-controls="project-cctv">CCTV Cameras Installation Projects</button>
+                            <article class="portfolio-card project-panel" id="project-cctv" data-project-panel="cctv" hidden>
+                                <span class="portfolio-tag">Security</span>
+                                <h3>CCTV Cameras Installation Projects</h3>
+                                <p>CCTV installation projects will be listed here as you provide the real project names.</p>
+                                <ul class="portfolio-list">
+                                    <li>CCTV Project Name Coming Soon</li>
+                                    <li>CCTV Project Name Coming Soon</li>
+                                    <li>CCTV Project Name Coming Soon</li>
+                                    <li>CCTV Project Name Coming Soon</li>
+                                </ul>
+                            </article>
+                        </div>
+
+                        <div class="project-item">
+                            <button class="project-toggle-btn" type="button" data-project="digital-literacy" aria-expanded="false" aria-controls="project-digital-literacy">Digital Literacy Training Project</button>
+                            <article class="portfolio-card project-panel" id="project-digital-literacy" data-project-panel="digital-literacy" hidden>
+                                <span class="portfolio-tag">Training</span>
+                                <h3>Digital Literacy Training Project</h3>
+                                <p>Digital literacy training projects will be listed here as you provide the real project names.</p>
+                                <ul class="portfolio-list">
+                                    <li>Digital Literacy Project Name Coming Soon</li>
+                                    <li>Digital Literacy Project Name Coming Soon</li>
+                                    <li>Digital Literacy Project Name Coming Soon</li>
+                                    <li>Digital Literacy Project Name Coming Soon</li>
+                                </ul>
+                            </article>
+                        </div>
+
+                        <div class="project-item">
+                            <button class="project-toggle-btn" type="button" data-project="consultancy" aria-expanded="false" aria-controls="project-consultancy">IT Consultancy Projects</button>
+                            <article class="portfolio-card project-panel" id="project-consultancy" data-project-panel="consultancy" hidden>
+                                <span class="portfolio-tag">Advisory</span>
+                                <h3>IT Consultancy Projects</h3>
+                                <p>IT consultancy projects will be listed here as you provide the real project names.</p>
+                                <ul class="portfolio-list">
+                                    <li>Consultancy Project Name Coming Soon</li>
+                                    <li>Consultancy Project Name Coming Soon</li>
+                                    <li>Consultancy Project Name Coming Soon</li>
+                                    <li>Consultancy Project Name Coming Soon</li>
+                                </ul>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="portfolio-results">
+            <div class="container">
+                <div class="portfolio-intro">
+                    <h2>What Our Work Aims to Improve</h2>
+                    <p>Every engagement is shaped around practical outcomes that clients can see in their workflow, systems, and team confidence.</p>
+                </div>
+                <div class="results-grid">
+                    <div class="result-card">
+                        <strong>Faster</strong>
+                        <span>Issue resolution and support response</span>
+                    </div>
+                    <div class="result-card">
+                        <strong>Better</strong>
+                        <span>Digital skills and operational confidence</span>
+                    </div>
+                    <div class="result-card">
+                        <strong>Clearer</strong>
+                        <span>Processes, tools, and implementation scope</span>
+                    </div>
+                    <div class="result-card">
+                        <strong>Stronger</strong>
+                        <span>Technology systems for daily work</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="portfolio-cta">
+            <div class="container">
+                <div class="portfolio-cta-box">
+                    <h2>Want Your Project Featured Here Next?</h2>
+                    <p>Talk with Tech Bridge Liberia about your website, training, data, or technical support needs and we will help you define the right next step.</p>
+                    <a href="./Contact.html" class="cta-btn">Start a Conversation</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Tech Bridge Liberia-TBL<br>
+                All rights reserved.<br>
+                Powered by Tech Bridge Liberia -TBL</p>
+        </div>
+    </footer>
+
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const navMenu = document.getElementById('navMenu');
+        
+        menuToggle.addEventListener('click', function() {
+            navMenu.classList.toggle('active');
+            menuToggle.classList.toggle('active');
+        });
+
+        const navLinks = navMenu.querySelectorAll('a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                navMenu.classList.remove('active');
+                menuToggle.classList.remove('active');
+            });
+        });
+
+        const projectButtons = document.querySelectorAll('.project-toggle-btn');
+        const projectPanels = document.querySelectorAll('.project-panel');
+
+        function hideProjectPanels() {
+            projectButtons.forEach(button => {
+                button.classList.remove('is-active');
+                button.setAttribute('aria-expanded', 'false');
+            });
+
+            projectPanels.forEach(panel => {
+                panel.classList.remove('is-active');
+                panel.hidden = true;
+            });
+        }
+
+        function showProjectPanel(projectKey) {
+            hideProjectPanels();
+
+            projectButtons.forEach(button => {
+                const isMatch = button.dataset.project === projectKey;
+                button.classList.toggle('is-active', isMatch);
+                button.setAttribute('aria-expanded', String(isMatch));
+            });
+
+            projectPanels.forEach(panel => {
+                const isMatch = panel.dataset.projectPanel === projectKey;
+                panel.classList.toggle('is-active', isMatch);
+                panel.hidden = !isMatch;
+            });
+        }
+
+        projectButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const isActive = button.classList.contains('is-active');
+                if (isActive) {
+                    hideProjectPanels();
+                    return;
+                }
+
+                showProjectPanel(button.dataset.project);
+            });
+        });
+
+        document.addEventListener('click', function(event) {
+            if (event.target.closest('.project-item')) return;
+            hideProjectPanels();
+        });
+    </script>
+    <script src="./active-nav.js"></script>
+</body>
+</html>
