@@ -22,7 +22,7 @@
         .hero-copy {
             max-width: 520px;
             width: auto;
-            flex: 1 1 0;
+            flex: 0.95 1 0;
             text-align: left;
             display: flex;
             flex-direction: column;
@@ -106,13 +106,13 @@
 
         .hero-showcase {
             position: relative;
-            width: min(100%, 380px);
-            min-width: 340px;
+            width: 100%;
+            min-width: 0;
             height: 430px;
             margin-top: 0;
             overflow: hidden;
-            flex: 0 0 380px;
-            align-self: flex-start;
+            flex: 1.05 1 0;
+            align-self: stretch;
             border-radius: 18px;
             border: 1px solid rgba(15, 52, 96, 0.08);
             background: var(--bg-white);
@@ -452,7 +452,7 @@
                 height: 380px;
                 width: min(100%, 560px);
                 min-width: 0;
-                flex-basis: auto;
+                flex: 0 1 auto;
                 align-self: center;
             }
 
