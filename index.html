@@ -77,6 +77,10 @@
             white-space: nowrap;
         }
 
+        .hero-headline-mobile {
+            display: none;
+        }
+
         .home-hero p {
             font-weight: 500;
             background: transparent;
@@ -493,8 +497,16 @@
             }
 
             .home-hero h2 {
-                font-size: clamp(1.14rem, 4.2vw, 1.32rem);
+                font-size: clamp(1.28rem, 4.8vw, 1.48rem);
                 line-height: 1.16;
+            }
+
+            .hero-headline-desktop {
+                display: none;
+            }
+
+            .hero-headline-mobile {
+                display: block;
             }
 
             .hero-copy {
@@ -577,9 +589,17 @@
             <div class="container">
                 <div class="hero-copy">
                     <h2>
-                        <span class="hero-headline-line">Delivering dependable IT/ICT solutions</span>
-                        <span class="hero-headline-line">and support for individuals, businesses,</span>
-                        <span class="hero-headline-line">government institutions, and organizations.</span>
+                        <span class="hero-headline-desktop">
+                            <span class="hero-headline-line">Delivering dependable IT/ICT solutions</span>
+                            <span class="hero-headline-line">and support for individuals, businesses,</span>
+                            <span class="hero-headline-line">government institutions, and organizations.</span>
+                        </span>
+                        <span class="hero-headline-mobile">
+                            <span class="hero-headline-line">Delivering dependable</span>
+                            <span class="hero-headline-line">IT/ICT solutions and support</span>
+                            <span class="hero-headline-line">for individuals, businesses,</span>
+                            <span class="hero-headline-line">government institutions, and organizations.</span>
+                        </span>
                     </h2>
                     <div class="hero-actions">
                         <a href="#booking" class="cta-btn">Book a Consultation</a>
