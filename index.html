@@ -13,18 +13,21 @@
         }
 
         .home-hero .container {
-            flex-direction: column;
+            flex-direction: row;
             max-width: 920px;
-            align-items: center;
+            align-items: stretch;
+            gap: 34px;
         }
 
         .hero-copy {
-            max-width: 700px;
-            width: 100%;
-            text-align: center;
+            max-width: 520px;
+            width: auto;
+            flex: 1 1 0;
+            text-align: left;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: flex-start;
+            justify-content: center;
             position: relative;
             padding: 24px 12px 18px;
             isolation: isolate;
@@ -43,14 +46,14 @@
         .hero-actions {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 14px;
             margin-top: 18px;
-            margin-bottom: 44px;
+            margin-bottom: 0;
         }
 
         .hero-copy .hero-actions {
-            justify-content: center;
+            justify-content: flex-start;
         }
 
         .home-hero h2,
@@ -60,7 +63,7 @@
         }
 
         .home-hero h2 {
-            max-width: 24ch;
+            max-width: 18ch;
             margin-bottom: 0;
             color: var(--primary-color);
             text-shadow: none;
@@ -103,10 +106,17 @@
 
         .hero-showcase {
             position: relative;
-            width: min(100%, 920px);
-            height: 440px;
-            margin-top: 10px;
+            width: min(100%, 380px);
+            min-width: 340px;
+            height: 430px;
+            margin-top: 0;
             overflow: hidden;
+            flex: 0 0 380px;
+            align-self: flex-start;
+            border-radius: 18px;
+            border: 1px solid rgba(15, 52, 96, 0.08);
+            background: var(--bg-white);
+            box-shadow: var(--shadow-md);
         }
 
         .hero-showcase::before {
@@ -440,6 +450,10 @@
 
             .hero-showcase {
                 height: 380px;
+                width: min(100%, 560px);
+                min-width: 0;
+                flex-basis: auto;
+                align-self: center;
             }
 
             .section-intro h2 {
@@ -450,6 +464,11 @@
             .hero-copy {
                 align-items: center;
                 text-align: center;
+            }
+
+            .home-hero .container {
+                flex-direction: column;
+                gap: 20px;
             }
 
             .hero-copy .hero-actions {
