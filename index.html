@@ -127,7 +127,7 @@
             inset: 0;
             margin: 0;
             opacity: 0;
-            animation: heroShowcaseSwap 16s infinite;
+            animation: heroShowcaseSwap 24s infinite;
         }
 
         .hero-showcase-slide:nth-child(1) {
@@ -144,6 +144,14 @@
 
         .hero-showcase-slide:nth-child(4) {
             animation-delay: 12s;
+        }
+
+        .hero-showcase-slide:nth-child(5) {
+            animation-delay: 16s;
+        }
+
+        .hero-showcase-slide:nth-child(6) {
+            animation-delay: 20s;
         }
 
         .hero-showcase-slide img {
@@ -183,7 +191,7 @@
             border-radius: 999px;
             background: rgba(255, 255, 255, 0.45);
             box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
-            animation: heroIndicatorPulse 16s infinite;
+            animation: heroIndicatorPulse 24s infinite;
         }
 
         .hero-showcase-indicators span:nth-child(1) {
@@ -202,23 +210,31 @@
             animation-delay: 12s;
         }
 
+        .hero-showcase-indicators span:nth-child(5) {
+            animation-delay: 16s;
+        }
+
+        .hero-showcase-indicators span:nth-child(6) {
+            animation-delay: 20s;
+        }
+
         @keyframes heroShowcaseSwap {
             0% {
                 opacity: 0;
                 transform: scale(1.03);
             }
 
-            6% {
+            4% {
                 opacity: 1;
                 transform: scale(1);
             }
 
-            22% {
+            13% {
                 opacity: 1;
                 transform: scale(1);
             }
 
-            28% {
+            17% {
                 opacity: 0;
                 transform: scale(1.03);
             }
@@ -236,8 +252,8 @@
                 transform: scale(1);
             }
 
-            6%,
-            22% {
+            4%,
+            13% {
                 background: #ffffff;
                 transform: scale(1.15);
             }
@@ -557,7 +573,17 @@
                         <img src="./New image file/IMages to be added as swap and other places/IT training at ppcc.png" alt="Tech Bridge delivering IT training at PPCC.">
                         <figcaption>Focused IT training that strengthens institutional capacity</figcaption>
                     </figure>
+                    <figure class="hero-showcase-slide">
+                        <img src="./New image file/IMages to be added as swap and other places/IT training at Ul campus.png" alt="Tech Bridge delivering IT training at UL campus.">
+                        <figcaption>Guided IT training sessions tailored for campus learning environments</figcaption>
+                    </figure>
+                    <figure class="hero-showcase-slide">
+                        <img src="./New image file/IMages to be added as swap and other places/Data collection Training at CU.png" alt="Tech Bridge facilitating data collection training at CU.">
+                        <figcaption>Data collection training that supports accurate digital fieldwork</figcaption>
+                    </figure>
                     <div class="hero-showcase-indicators" aria-hidden="true">
+                        <span></span>
+                        <span></span>
                         <span></span>
                         <span></span>
                         <span></span>
