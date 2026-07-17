@@ -64,10 +64,11 @@
 
         .home-hero h2 {
             max-width: 16ch;
+            font-size: clamp(3.2rem, 4.2vw, 3.8rem);
             margin-bottom: 0;
             color: var(--primary-color);
             text-shadow: none;
-            line-height: 1.2;
+            line-height: 1.12;
             text-wrap: balance;
         }
 
@@ -479,12 +480,18 @@
 
             .home-hero h2 {
                 max-width: none;
+                font-size: clamp(2.6rem, 6vw, 3.2rem);
             }
         }
 
         @media (max-width: 640px) {
             .home-hero {
                 padding: 88px 20px 70px;
+            }
+
+            .home-hero h2 {
+                font-size: clamp(2.1rem, 8vw, 2.7rem);
+                line-height: 1.16;
             }
 
             .hero-copy {
