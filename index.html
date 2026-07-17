@@ -450,25 +450,26 @@
 
             .hero-showcase {
                 height: 380px;
-                width: min(100%, 560px);
+                width: 100%;
                 min-width: 0;
                 flex: 0 1 auto;
-                align-self: center;
+                align-self: stretch;
             }
 
             .section-intro h2 {
                 font-size: 2rem;
             }
 
-            .home-hero .container,
-            .hero-copy {
-                align-items: center;
-                text-align: center;
-            }
-
             .home-hero .container {
                 flex-direction: column;
                 gap: 20px;
+                align-items: stretch;
+            }
+
+            .hero-copy {
+                align-items: center;
+                text-align: center;
+                max-width: none;
             }
 
             .hero-copy .hero-actions {
