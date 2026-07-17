@@ -497,8 +497,8 @@
             }
 
             .home-hero h2 {
-                font-size: clamp(1.44rem, 5.3vw, 1.7rem);
-                line-height: 1.14;
+                font-size: clamp(1.54rem, 5.7vw, 1.86rem);
+                line-height: 1.15;
             }
 
             .hero-headline-desktop {
@@ -507,10 +507,20 @@
 
             .hero-headline-mobile {
                 display: block;
+                max-width: 17ch;
+                margin: 0 auto;
+                text-wrap: pretty;
+            }
+
+            .hero-headline-mobile .hero-headline-line {
+                white-space: normal;
             }
 
             .hero-copy {
-                padding: 12px 8px 12px;
+                padding: 14px 10px 12px;
+                border-radius: 24px;
+                background: rgba(255, 255, 255, 0.8);
+                box-shadow: 0 16px 32px rgba(15, 52, 96, 0.1);
             }
 
             .hero-copy::before {
@@ -590,15 +600,15 @@
                 <div class="hero-copy">
                     <h2>
                         <span class="hero-headline-desktop">
-                            <span class="hero-headline-line">Delivering dependable IT/ICT solutions</span>
+                            <span class="hero-headline-line">We deliver dependable IT/ICT solutions</span>
                             <span class="hero-headline-line">and support for individuals, businesses,</span>
                             <span class="hero-headline-line">government institutions, and organizations.</span>
                         </span>
                         <span class="hero-headline-mobile">
-                            <span class="hero-headline-line">Delivering dependable IT/ICT solutions</span>
-                            <span class="hero-headline-line">and support for individuals,</span>
-                            <span class="hero-headline-line">businesses, government institutions,</span>
-                            <span class="hero-headline-line">and organizations.</span>
+                            <span class="hero-headline-line">Delivering dependable</span>
+                            <span class="hero-headline-line">IT/ICT solutions and support</span>
+                            <span class="hero-headline-line">for individuals, businesses,</span>
+                            <span class="hero-headline-line">government institutions and organizations.</span>
                         </span>
                     </h2>
                     <div class="hero-actions">
