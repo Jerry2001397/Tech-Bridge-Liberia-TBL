@@ -13,20 +13,20 @@
         }
 
         .home-hero .container {
-            flex-direction: row;
+            flex-direction: column;
             max-width: 920px;
             align-items: stretch;
-            gap: 34px;
+            gap: 24px;
         }
 
         .hero-copy {
-            max-width: 520px;
-            width: auto;
-            flex: 0.95 1 0;
-            text-align: left;
+            max-width: 680px;
+            width: 100%;
+            flex: 0 1 auto;
+            text-align: center;
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
+            align-items: center;
             justify-content: flex-start;
             position: relative;
             padding: 12px 12px 20px;
@@ -46,14 +46,14 @@
         .hero-actions {
             display: flex;
             flex-wrap: wrap;
-            justify-content: flex-start;
+            justify-content: center;
             gap: 14px;
             margin-top: 18px;
             margin-bottom: 0;
         }
 
         .hero-copy .hero-actions {
-            justify-content: flex-start;
+            justify-content: center;
         }
 
         .home-hero h2,
@@ -63,13 +63,18 @@
         }
 
         .home-hero h2 {
-            max-width: 16ch;
-            font-size: clamp(2.8rem, 3.8vw, 3.2rem);
+            max-width: none;
+            font-size: clamp(2.6rem, 3.4vw, 3rem);
             margin-bottom: 0;
             color: var(--primary-color);
             text-shadow: none;
             line-height: 1.12;
-            text-wrap: balance;
+            text-wrap: initial;
+        }
+
+        .hero-headline-line {
+            display: block;
+            white-space: nowrap;
         }
 
         .home-hero p {
@@ -113,7 +118,7 @@
             height: 360px;
             margin-top: 0;
             overflow: hidden;
-            flex: 1 1 0;
+            flex: 0 1 auto;
             align-self: stretch;
             border-radius: 12px;
             border: 1px solid var(--border-color);
@@ -463,7 +468,6 @@
             }
 
             .home-hero .container {
-                flex-direction: column;
                 gap: 20px;
                 align-items: stretch;
             }
@@ -479,8 +483,7 @@
             }
 
             .home-hero h2 {
-                max-width: none;
-                font-size: clamp(2.3rem, 5.6vw, 2.8rem);
+                font-size: clamp(1.65rem, 4vw, 2.2rem);
             }
         }
 
@@ -490,7 +493,7 @@
             }
 
             .home-hero h2 {
-                font-size: clamp(1.95rem, 7.2vw, 2.35rem);
+                font-size: clamp(1.02rem, 3.8vw, 1.18rem);
                 line-height: 1.16;
             }
 
@@ -573,7 +576,11 @@
         <section class="hero home-hero">
             <div class="container">
                 <div class="hero-copy">
-                    <h2>Delivering dependable IT/ICT solutions and support for individuals, businesses, government institutions, and organizations.</h2>
+                    <h2>
+                        <span class="hero-headline-line">Delivering dependable IT/ICT solutions</span>
+                        <span class="hero-headline-line">and support for individuals, businesses,</span>
+                        <span class="hero-headline-line">government institutions, and organizations.</span>
+                    </h2>
                     <div class="hero-actions">
                         <a href="#booking" class="cta-btn">Book a Consultation</a>
                         <a href="./Index Service.html" class="cta-btn secondary">View Services</a>
