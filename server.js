@@ -314,8 +314,7 @@ function renderAdminDashboard(rows) {
     <div class="page">
       <div class="topbar">
         <div>
-          <h1>Booking Requests</h1>
-          <p>Requests submitted from the home page form are listed below.</p>
+          <h1>Tech Bridge Liberia--TBL Booking List</h1>
         </div>
         <a class="logout" href="/admin/logout">Logout</a>
       </div>
