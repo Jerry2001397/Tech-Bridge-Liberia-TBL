@@ -340,6 +340,15 @@ function renderAdminDashboard(bookingRows, newsRows) {
       .layout { display: grid; gap: 24px; }
       .admin-card { background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 16px; box-shadow: 0 18px 36px rgba(15, 52, 96, 0.06); padding: 24px; }
       .admin-card h2 { margin: 0 0 18px; font-size: 1.35rem; }
+      .composer-toggle { border: 1px solid var(--admin-border); border-radius: 16px; background: var(--admin-surface); box-shadow: 0 18px 36px rgba(15, 52, 96, 0.06); }
+      .composer-toggle summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 24px; cursor: pointer; list-style: none; }
+      .composer-toggle summary::-webkit-details-marker { display: none; }
+      .composer-toggle[open] summary { border-bottom: 1px solid var(--admin-border); }
+      .composer-title { display: flex; flex-direction: column; gap: 4px; }
+      .composer-title strong { font-size: 1.05rem; }
+      .composer-title span { color: var(--admin-blue-soft); font-size: 0.94rem; }
+      .composer-button { display: inline-flex; align-items: center; justify-content: center; padding: 10px 14px; border: 1px solid var(--admin-blue); border-radius: 999px; background: #ffffff; color: var(--admin-blue); font-weight: 700; white-space: nowrap; }
+      .composer-panel { padding: 24px; }
       .news-form { display: grid; gap: 16px; }
       .news-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
       .news-form label { display: block; margin-bottom: 8px; font-weight: 700; }
@@ -363,6 +372,7 @@ function renderAdminDashboard(bookingRows, newsRows) {
       .news-item-meta { margin-bottom: 8px; color: var(--admin-blue-soft); font-size: 0.92rem; font-weight: 700; }
       .empty-news { padding: 18px; border: 1px dashed var(--admin-border); border-radius: 14px; color: var(--admin-blue-soft); }
       @media (max-width: 900px) {
+        .composer-toggle summary { align-items: flex-start; flex-direction: column; }
         .news-form-grid { grid-template-columns: 1fr; }
         .news-item { grid-template-columns: 1fr; }
         .news-thumb { width: 100%; height: 220px; }
@@ -378,34 +388,42 @@ function renderAdminDashboard(bookingRows, newsRows) {
         <a class="logout" href="/admin/logout">Logout</a>
       </div>
       <div class="layout">
-        <section class="admin-card">
-          <h2>Post News and Updates</h2>
-          <form class="news-form" method="post" action="/admin/news">
-            <div>
-              <label for="newsTitle">News Title</label>
-              <input id="newsTitle" name="title" type="text" required>
+        <details class="composer-toggle">
+          <summary>
+            <div class="composer-title">
+              <strong>Post News</strong>
+              <span>Open the form only when you need to publish an update.</span>
             </div>
-            <div class="news-form-grid">
+            <span class="composer-button">Add News</span>
+          </summary>
+          <div class="composer-panel">
+            <form class="news-form" method="post" action="/admin/news">
               <div>
-                <label for="newsAuthor">Author Name</label>
-                <input id="newsAuthor" name="author_name" type="text" required>
+                <label for="newsTitle">News Title</label>
+                <input id="newsTitle" name="title" type="text" required>
+              </div>
+              <div class="news-form-grid">
+                <div>
+                  <label for="newsAuthor">Author Name</label>
+                  <input id="newsAuthor" name="author_name" type="text" required>
+                </div>
+                <div>
+                  <label for="newsDate">Date</label>
+                  <input id="newsDate" name="publish_date" type="date" required>
+                </div>
               </div>
               <div>
-                <label for="newsDate">Date</label>
-                <input id="newsDate" name="publish_date" type="date" required>
+                <label for="newsImage">Image URL</label>
+                <input id="newsImage" name="image_url" type="url" placeholder="https://example.com/image.jpg" required>
               </div>
-            </div>
-            <div>
-              <label for="newsImage">Image URL</label>
-              <input id="newsImage" name="image_url" type="url" placeholder="https://example.com/image.jpg" required>
-            </div>
-            <div>
-              <label for="newsBody">Body</label>
-              <textarea id="newsBody" name="body" required></textarea>
-            </div>
-            <button class="publish-btn" type="submit">Publish Update</button>
-          </form>
-        </section>
+              <div>
+                <label for="newsBody">Body</label>
+                <textarea id="newsBody" name="body" required></textarea>
+              </div>
+              <button class="publish-btn" type="submit">Publish Update</button>
+            </form>
+          </div>
+        </details>
         <section class="admin-card">
           <h2>Published News</h2>
           <div class="news-list">${newsList}</div>
