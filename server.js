@@ -287,6 +287,9 @@ function renderAdminLogin(errorMessage) {
 }
 
 function renderAdminDashboard(bookingRows, newsRows) {
+  const bookingCount = bookingRows.length;
+  const newsCount = newsRows.length;
+
   const bookingTableRows = bookingRows.length
     ? bookingRows.map((row) => `
         <tr>
@@ -330,52 +333,73 @@ function renderAdminDashboard(bookingRows, newsRows) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking Requests - Tech Bridge Liberia</title>
     <style>
-      :root { --admin-blue: #0f3460; --admin-blue-soft: #5f7694; --admin-border: #d8e2ef; --admin-surface: #ffffff; }
-      body { margin: 0; font-family: Arial, sans-serif; background: #ffffff; color: var(--admin-blue); }
-      .page { padding: 32px 24px 48px; }
-      .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
-      .topbar h1 { margin: 0; font-size: 2rem; }
-      .logout { display: inline-flex; align-items: center; justify-content: center; padding: 12px 18px; border: 1px solid var(--admin-blue); border-radius: 10px; background: #ffffff; color: var(--admin-blue); text-decoration: none; font-weight: 700; }
-      .logout:hover { background: #f4f8fc; }
+      :root { --admin-ink: #123252; --admin-ink-soft: #5d7390; --admin-border: #d7e2ef; --admin-surface: #ffffff; --admin-surface-soft: #f5f8fc; --admin-accent: #174a7a; --admin-shadow: 0 20px 40px rgba(18, 50, 82, 0.08); --admin-danger: #b02a37; }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(180deg, #f4f7fb 0%, #eef3f8 100%); color: var(--admin-ink); }
+      button, input, textarea { font: inherit; }
+      .page { max-width: 1280px; margin: 0 auto; padding: 32px 24px 48px; }
+      .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 24px; }
+      .topbar h1 { margin: 0; font-size: clamp(1.9rem, 4vw, 2.5rem); }
+      .topbar p { margin: 10px 0 0; color: var(--admin-ink-soft); max-width: 640px; line-height: 1.6; }
+      .topbar-actions { display: flex; align-items: center; gap: 12px; }
+      .menu-shell { position: relative; }
+      .menu-toggle, .logout, .publish-btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 18px; border: 1px solid var(--admin-accent); border-radius: 12px; background: #ffffff; color: var(--admin-accent); text-decoration: none; font-weight: 700; cursor: pointer; transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+      .menu-toggle:hover, .logout:hover, .publish-btn:hover { background: #eef4fb; }
+      .menu-toggle[aria-expanded="true"] { background: var(--admin-accent); color: #ffffff; }
+      .menu-panel { position: absolute; right: 0; top: calc(100% + 12px); width: 220px; padding: 10px; border: 1px solid var(--admin-border); border-radius: 16px; background: rgba(255, 255, 255, 0.98); box-shadow: var(--admin-shadow); z-index: 10; }
+      .menu-item { width: 100%; padding: 12px 14px; border: 0; border-radius: 12px; background: transparent; color: var(--admin-ink); text-align: left; cursor: pointer; }
+      .menu-item:hover { background: var(--admin-surface-soft); }
+      .hero { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr); gap: 20px; margin-bottom: 24px; padding: 28px; }
+      .hero-copy h2 { margin: 0; font-size: 1.45rem; }
+      .hero-copy p { margin: 10px 0 0; color: var(--admin-ink-soft); line-height: 1.7; }
+      .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+      .stat-card { padding: 18px; border: 1px solid var(--admin-border); border-radius: 16px; background: var(--admin-surface-soft); }
+      .stat-card span { display: block; color: var(--admin-ink-soft); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.08em; }
+      .stat-card strong { display: block; margin-top: 8px; font-size: 2rem; }
       .layout { display: grid; gap: 24px; }
-      .admin-card { background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 16px; box-shadow: 0 18px 36px rgba(15, 52, 96, 0.06); padding: 24px; }
-      .admin-card h2 { margin: 0 0 18px; font-size: 1.35rem; }
-      .composer-toggle { border: 1px solid var(--admin-border); border-radius: 16px; background: var(--admin-surface); box-shadow: 0 18px 36px rgba(15, 52, 96, 0.06); }
-      .composer-toggle summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 24px; cursor: pointer; list-style: none; }
-      .composer-toggle summary::-webkit-details-marker { display: none; }
-      .composer-toggle[open] summary { border-bottom: 1px solid var(--admin-border); }
-      .composer-title { display: flex; flex-direction: column; gap: 4px; }
-      .composer-title strong { font-size: 1.05rem; }
-      .composer-title span { color: var(--admin-blue-soft); font-size: 0.94rem; }
-      .composer-button { display: inline-flex; align-items: center; justify-content: center; padding: 10px 14px; border: 1px solid var(--admin-blue); border-radius: 999px; background: #ffffff; color: var(--admin-blue); font-weight: 700; white-space: nowrap; }
-      .composer-panel { padding: 24px; }
-      .news-form { display: grid; gap: 16px; }
-      .news-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+      .admin-card, .panel-card { background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 20px; box-shadow: var(--admin-shadow); }
+      .admin-card { padding: 24px; }
+      .panel-card { overflow: hidden; }
+      .section-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 18px; }
+      .section-heading h2 { margin: 0; font-size: 1.35rem; }
+      .section-heading p { margin: 6px 0 0; color: var(--admin-ink-soft); line-height: 1.6; }
+      .section-badge { display: inline-flex; align-items: center; padding: 8px 12px; border-radius: 999px; background: var(--admin-surface-soft); color: var(--admin-accent); font-size: 0.9rem; font-weight: 700; white-space: nowrap; }
+      .composer-card { border-style: dashed; }
+      .news-form { display: grid; gap: 20px; }
+      .news-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+      .field-full { grid-column: 1 / -1; }
       .news-form label { display: block; margin-bottom: 8px; font-weight: 700; }
-      .news-form input, .news-form textarea { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid var(--admin-border); border-radius: 10px; font: inherit; color: var(--admin-blue); background: #ffffff; }
-      .news-form textarea { min-height: 160px; resize: vertical; }
-      .news-form input:focus, .news-form textarea:focus { outline: none; border-color: var(--admin-blue); box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.12); }
-      .publish-btn { width: fit-content; padding: 12px 20px; border: 1px solid var(--admin-blue); border-radius: 10px; background: #ffffff; color: var(--admin-blue); font-weight: 700; cursor: pointer; }
-      .publish-btn:hover { background: #f4f8fc; }
-      .panel { background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 16px; box-shadow: 0 18px 36px rgba(15, 52, 96, 0.06); overflow: auto; }
+      .news-form input, .news-form textarea { width: 100%; padding: 13px 14px; border: 1px solid var(--admin-border); border-radius: 12px; color: var(--admin-ink); background: #ffffff; }
+      .news-form textarea { min-height: 180px; resize: vertical; }
+      .news-form input:focus, .news-form textarea:focus { outline: none; border-color: var(--admin-accent); box-shadow: 0 0 0 3px rgba(23, 74, 122, 0.12); }
+      .form-actions { display: flex; justify-content: flex-end; }
+      .panel-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 24px 24px 0; }
+      .panel-header h2 { margin: 0; font-size: 1.35rem; }
+      .panel-header p { margin: 6px 0 0; color: var(--admin-ink-soft); }
+      .panel { background: var(--admin-surface); overflow: auto; padding: 18px 24px 24px; }
       table { width: 100%; border-collapse: collapse; min-width: 1040px; }
       th, td { padding: 16px 14px; border-bottom: 1px solid var(--admin-border); text-align: left; vertical-align: top; }
-      th { background: #ffffff; color: var(--admin-blue); font-size: 0.92rem; text-transform: uppercase; letter-spacing: 0.06em; }
+      th { background: #ffffff; color: var(--admin-ink); font-size: 0.92rem; text-transform: uppercase; letter-spacing: 0.06em; }
       td { line-height: 1.5; }
-      .delete-btn { padding: 10px 14px; border: 0; border-radius: 10px; background: #b02a37; color: #fff; font-weight: 700; cursor: pointer; }
+      .delete-btn { padding: 10px 14px; border: 0; border-radius: 10px; background: var(--admin-danger); color: #fff; font-weight: 700; cursor: pointer; }
       .delete-btn:hover { background: #951f2b; }
       .news-list { display: grid; gap: 16px; }
-      .news-item { display: grid; grid-template-columns: 140px 1fr auto; gap: 16px; align-items: start; padding: 16px; border: 1px solid var(--admin-border); border-radius: 14px; }
-      .news-thumb { width: 140px; height: 100px; object-fit: cover; border-radius: 12px; background: #f4f8fc; }
+      .news-item { display: grid; grid-template-columns: 160px minmax(0, 1fr) auto; gap: 18px; align-items: start; padding: 18px; border: 1px solid var(--admin-border); border-radius: 16px; background: var(--admin-surface-soft); }
+      .news-thumb { width: 160px; height: 120px; object-fit: cover; border-radius: 14px; background: #e6edf6; }
       .news-item-copy h3 { margin: 0 0 8px; }
-      .news-item-copy p { margin: 0; color: var(--admin-blue-soft); line-height: 1.6; }
-      .news-item-meta { margin-bottom: 8px; color: var(--admin-blue-soft); font-size: 0.92rem; font-weight: 700; }
-      .empty-news { padding: 18px; border: 1px dashed var(--admin-border); border-radius: 14px; color: var(--admin-blue-soft); }
-      @media (max-width: 900px) {
-        .composer-toggle summary { align-items: flex-start; flex-direction: column; }
-        .news-form-grid { grid-template-columns: 1fr; }
-        .news-item { grid-template-columns: 1fr; }
+      .news-item-copy p { margin: 0; color: var(--admin-ink-soft); line-height: 1.7; }
+      .news-item-meta { margin-bottom: 8px; color: var(--admin-ink-soft); font-size: 0.92rem; font-weight: 700; }
+      .empty-news { padding: 22px; border: 1px dashed var(--admin-border); border-radius: 16px; color: var(--admin-ink-soft); background: var(--admin-surface-soft); }
+      [hidden] { display: none !important; }
+      @media (max-width: 960px) {
+        .topbar, .topbar-actions, .hero, .section-heading, .panel-header { flex-direction: column; align-items: stretch; }
+        .topbar-actions { width: 100%; }
+        .menu-shell { width: 100%; }
+        .menu-toggle, .logout, .publish-btn { width: 100%; }
+        .menu-panel { position: static; width: 100%; margin-top: 12px; }
+        .hero, .stats, .news-form-grid, .news-item { grid-template-columns: 1fr; }
         .news-thumb { width: 100%; height: 220px; }
+        .form-actions { justify-content: stretch; }
       }
     </style>
   </head>
@@ -383,71 +407,162 @@ function renderAdminDashboard(bookingRows, newsRows) {
     <div class="page">
       <div class="topbar">
         <div>
-          <h1>Tech Bridge Liberia--TBL Booking List</h1>
+          <h1>Tech Bridge Liberia Admin</h1>
+          <p>Review client requests, manage published updates, and keep newsroom actions tucked behind a single menu for a cleaner admin flow.</p>
         </div>
-        <a class="logout" href="/admin/logout">Logout</a>
-      </div>
-      <div class="layout">
-        <details class="composer-toggle">
-          <summary>
-            <div class="composer-title">
-              <strong>Post News</strong>
-              <span>Open the form only when you need to publish an update.</span>
+        <div class="topbar-actions">
+          <div class="menu-shell">
+            <button class="menu-toggle" id="adminMenuToggle" type="button" aria-expanded="false" aria-controls="adminMenu">Menu</button>
+            <div class="menu-panel" id="adminMenu" hidden>
+              <button class="menu-item" type="button" data-target="newsComposer">Post News</button>
+              <button class="menu-item" type="button" data-target="publishedNews">Published News</button>
+              <button class="menu-item" type="button" data-target="bookingRequests">Booking Requests</button>
             </div>
-            <span class="composer-button">Add News</span>
-          </summary>
-          <div class="composer-panel">
-            <form class="news-form" method="post" action="/admin/news">
-              <div>
+          </div>
+          <a class="logout" href="/admin/logout">Logout</a>
+        </div>
+      </div>
+
+      <section class="admin-card hero">
+        <div class="hero-copy">
+          <h2>Operations overview</h2>
+          <p>Use the menu to open the news publishing form only when needed. The rest of the dashboard stays focused on published content and incoming bookings.</p>
+        </div>
+        <div class="stats">
+          <div class="stat-card">
+            <span>Booking Requests</span>
+            <strong>${bookingCount}</strong>
+          </div>
+          <div class="stat-card">
+            <span>Published News</span>
+            <strong>${newsCount}</strong>
+          </div>
+        </div>
+      </section>
+
+      <div class="layout">
+        <section class="admin-card composer-card" id="newsComposer" hidden>
+          <div class="section-heading">
+            <div>
+              <h2>Post News</h2>
+              <p>Complete the fields below when you are ready to publish a new update.</p>
+            </div>
+            <span class="section-badge">Publishing Panel</span>
+          </div>
+          <form class="news-form" method="post" action="/admin/news">
+            <div class="news-form-grid">
+              <div class="field-full">
                 <label for="newsTitle">News Title</label>
                 <input id="newsTitle" name="title" type="text" required>
               </div>
-              <div class="news-form-grid">
-                <div>
-                  <label for="newsAuthor">Author Name</label>
-                  <input id="newsAuthor" name="author_name" type="text" required>
-                </div>
-                <div>
-                  <label for="newsDate">Date</label>
-                  <input id="newsDate" name="publish_date" type="date" required>
-                </div>
+              <div>
+                <label for="newsAuthor">Author Name</label>
+                <input id="newsAuthor" name="author_name" type="text" required>
               </div>
               <div>
+                <label for="newsDate">Date</label>
+                <input id="newsDate" name="publish_date" type="date" required>
+              </div>
+              <div class="field-full">
                 <label for="newsImage">Image URL</label>
                 <input id="newsImage" name="image_url" type="url" placeholder="https://example.com/image.jpg" required>
               </div>
-              <div>
+              <div class="field-full">
                 <label for="newsBody">Body</label>
                 <textarea id="newsBody" name="body" required></textarea>
               </div>
+            </div>
+            <div class="form-actions">
               <button class="publish-btn" type="submit">Publish Update</button>
-            </form>
+            </div>
+          </form>
+        </section>
+        <section class="admin-card" id="publishedNews">
+          <div class="section-heading">
+            <div>
+              <h2>Published News</h2>
+              <p>Review every live post in a cleaner card layout before deciding to delete one.</p>
+            </div>
+            <span class="section-badge">${newsCount} Total</span>
           </div>
-        </details>
-        <section class="admin-card">
-          <h2>Published News</h2>
           <div class="news-list">${newsList}</div>
         </section>
-        <div class="panel">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Preferred Date</th>
-                <th>Service</th>
-                <th>Payment</th>
-                <th>Address</th>
-                <th>Submitted</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>${bookingTableRows}</tbody>
-          </table>
-        </div>
+        <section class="panel-card" id="bookingRequests">
+          <div class="panel-header">
+            <div>
+              <h2>Booking Requests</h2>
+              <p>All client requests remain grouped in the same dashboard for quick follow-up.</p>
+            </div>
+            <span class="section-badge">${bookingCount} Pending</span>
+          </div>
+          <div class="panel">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Preferred Date</th>
+                  <th>Service</th>
+                  <th>Payment</th>
+                  <th>Address</th>
+                  <th>Submitted</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>${bookingTableRows}</tbody>
+            </table>
+          </div>
+        </section>
       </div>
     </div>
+    <script>
+      const menuToggle = document.getElementById('adminMenuToggle');
+      const menuPanel = document.getElementById('adminMenu');
+      const composer = document.getElementById('newsComposer');
+
+      const setMenuState = (isOpen) => {
+        menuToggle.setAttribute('aria-expanded', String(isOpen));
+        menuPanel.hidden = !isOpen;
+      };
+
+      const openComposer = () => {
+        composer.hidden = false;
+        composer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+
+      menuToggle.addEventListener('click', () => {
+        const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
+        setMenuState(!isOpen);
+      });
+
+      menuPanel.querySelectorAll('[data-target]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const target = document.getElementById(button.getAttribute('data-target'));
+          if (!target) {
+            return;
+          }
+
+          if (button.getAttribute('data-target') === 'newsComposer') {
+            openComposer();
+          } else {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+
+          setMenuState(false);
+        });
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!menuShellContains(event.target)) {
+          setMenuState(false);
+        }
+      });
+
+      function menuShellContains(target) {
+        return menuToggle.contains(target) || menuPanel.contains(target);
+      }
+    </script>
   </body>
   </html>`;
 }
