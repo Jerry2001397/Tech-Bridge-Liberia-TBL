@@ -8,6 +8,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "busboy": "^1.6.0",
     "pg": "^8.13.1"
   },
   "engines": {

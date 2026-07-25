@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const Busboy = require('busboy');
 const fs = require('fs');
 const http = require('http');
 const path = require('path');
@@ -15,6 +16,7 @@ const sendGridSender = process.env.SENDGRID_SENDER || '';
 const notifyEmail = process.env.NOTIFY_EMAIL || '';
 const cookieName = 'tbl_admin_session';
 const sessionDurationMs = 8 * 60 * 60 * 1000;
+const newsUploadDir = path.resolve(rootDir, 'uploads', 'news');
 
 const mimeTypes = {
   '.css': 'text/css; charset=utf-8',
@@ -116,6 +118,154 @@ function readRequestBody(request) {
     });
     request.on('end', () => resolve(body));
     request.on('error', reject);
+  });
+}
+
+function sanitizeFileSegment(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'news-image';
+}
+
+function getImageExtension(filename, mimeType) {
+  const extension = path.extname(filename || '').toLowerCase();
+  if (extension) {
+    return extension;
+  }
+
+  switch (mimeType) {
+    case 'image/jpeg':
+      return '.jpg';
+    case 'image/png':
+      return '.png';
+    case 'image/webp':
+      return '.webp';
+    case 'image/gif':
+      return '.gif';
+    case 'image/svg+xml':
+      return '.svg';
+    default:
+      return '.bin';
+  }
+}
+
+async function saveNewsImage(upload) {
+  await fs.promises.mkdir(newsUploadDir, { recursive: true });
+
+  const extension = getImageExtension(upload.filename, upload.mimeType);
+  const fileName = `${Date.now()}-${sanitizeFileSegment(path.basename(upload.filename || 'image', extension))}-${crypto.randomBytes(6).toString('hex')}${extension}`;
+  const targetPath = path.join(newsUploadDir, fileName);
+
+  await fs.promises.writeFile(targetPath, upload.buffer);
+  return `/uploads/news/${fileName}`;
+}
+
+async function removeManagedNewsImage(imageUrl) {
+  if (!imageUrl || !String(imageUrl).startsWith('/uploads/news/')) {
+    return;
+  }
+
+  const resolvedPath = path.resolve(rootDir, String(imageUrl).replace(/^\/+/, ''));
+  if (!resolvedPath.startsWith(newsUploadDir)) {
+    return;
+  }
+
+  try {
+    await fs.promises.unlink(resolvedPath);
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+  }
+}
+
+function parseMultipartForm(request) {
+  return new Promise((resolve, reject) => {
+    const contentType = String(request.headers['content-type'] || '');
+    if (!contentType.includes('multipart/form-data')) {
+      reject(new Error('Expected multipart form data.'));
+      return;
+    }
+
+    const fields = {};
+    let uploadError = null;
+    let imageSavePromise = Promise.resolve('');
+
+    const busboy = Busboy({
+      headers: request.headers,
+      limits: {
+        files: 1,
+        fileSize: 5 * 1024 * 1024,
+        fields: 20
+      }
+    });
+
+    busboy.on('field', (name, value) => {
+      fields[name] = value;
+    });
+
+    busboy.on('file', (name, file, info) => {
+      if (name !== 'image') {
+        file.resume();
+        return;
+      }
+
+      const { filename, mimeType } = info;
+      if (!filename) {
+        file.resume();
+        return;
+      }
+
+      if (!mimeType || !mimeType.startsWith('image/')) {
+        uploadError = new Error('Image must be a valid image file.');
+        file.resume();
+        return;
+      }
+
+      const chunks = [];
+
+      file.on('data', (chunk) => {
+        chunks.push(chunk);
+      });
+
+      file.on('limit', () => {
+        uploadError = new Error('Image file must be 5MB or smaller.');
+      });
+
+      file.on('end', () => {
+        if (uploadError) {
+          return;
+        }
+
+        imageSavePromise = saveNewsImage({
+          filename,
+          mimeType,
+          buffer: Buffer.concat(chunks)
+        });
+      });
+    });
+
+    busboy.on('error', reject);
+
+    busboy.on('finish', async () => {
+      if (uploadError) {
+        reject(uploadError);
+        return;
+      }
+
+      try {
+        const imageUrl = await imageSavePromise;
+        if (imageUrl) {
+          fields.image_url = imageUrl;
+        }
+        resolve(fields);
+      } catch (error) {
+        reject(error);
+      }
+    });
+
+    request.pipe(busboy);
   });
 }
 
@@ -285,9 +435,22 @@ function renderAdminLogin(errorMessage) {
   </html>`;
 }
 
-function renderAdminDashboard(bookingRows, newsRows) {
+function renderAdminDashboard(bookingRows, newsRows, options = {}) {
+  const editingNews = options.editingNews || null;
+  const composerOpen = Boolean(options.composerOpen);
   const bookingCount = bookingRows.length;
   const newsCount = newsRows.length;
+  const composerTitle = editingNews ? 'Edit News' : 'Post News';
+  const submitLabel = editingNews ? 'Save Changes' : 'Publish Update';
+  const formImageRequired = editingNews ? '' : 'required';
+  const editingIdInput = editingNews ? `<input type="hidden" name="id" value="${escapeHtml(editingNews.id)}">` : '';
+  const existingImageInput = editingNews ? `<input type="hidden" name="existing_image_url" value="${escapeHtml(editingNews.image_url)}">` : '';
+  const currentImageCard = editingNews && editingNews.image_url
+    ? `<div class="field-full current-image-card">
+        <span class="field-caption">Current Image</span>
+        <img src="${escapeHtml(editingNews.image_url)}" alt="${escapeHtml(editingNews.title)}" class="current-image-preview">
+      </div>`
+    : '';
 
   const bookingTableRows = bookingRows.length
     ? bookingRows.map((row) => `
@@ -318,10 +481,13 @@ function renderAdminDashboard(bookingRows, newsRows) {
             <h3>${escapeHtml(row.title)}</h3>
             <p>${formatMultilineHtml(row.body)}</p>
           </div>
-          <form method="post" action="/admin/news/delete" onsubmit="return confirm('Delete this news post?');">
-            <input type="hidden" name="id" value="${escapeHtml(row.id)}">
-            <button class="delete-btn" type="submit">Delete</button>
-          </form>
+          <div class="news-actions">
+            <a class="secondary-btn" href="/admin?editNews=${escapeHtml(row.id)}#newsComposer">Edit</a>
+            <form method="post" action="/admin/news/delete" onsubmit="return confirm('Delete this news post?');">
+              <input type="hidden" name="id" value="${escapeHtml(row.id)}">
+              <button class="delete-btn" type="submit">Delete</button>
+            </form>
+          </div>
         </article>`).join('')
     : '<div class="empty-news">No news posts yet.</div>';
 
@@ -363,14 +529,21 @@ function renderAdminDashboard(bookingRows, newsRows) {
       .section-heading p { margin: 6px 0 0; color: var(--admin-ink-soft); line-height: 1.6; }
       .section-badge { display: inline-flex; align-items: center; padding: 8px 12px; border: 1px solid var(--admin-border); border-radius: 999px; background: #ffffff; color: var(--admin-accent); font-size: 0.9rem; font-weight: 700; white-space: nowrap; }
       .composer-card { border-style: solid; }
+      .section-actions { display: flex; align-items: center; gap: 10px; }
       .news-form { display: grid; gap: 20px; }
       .news-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
       .field-full { grid-column: 1 / -1; }
+      .field-caption { display: block; margin-bottom: 8px; font-weight: 700; color: var(--admin-accent); }
       .news-form label { display: block; margin-bottom: 8px; font-weight: 700; }
       .news-form input, .news-form textarea { width: 100%; padding: 13px 14px; border: 1px solid var(--admin-border); border-radius: 12px; color: var(--admin-ink); background: #ffffff; }
+      .news-form input[type="file"] { padding: 11px 12px; cursor: pointer; }
       .news-form textarea { min-height: 180px; resize: vertical; }
       .news-form input:focus, .news-form textarea:focus { outline: none; border-color: var(--admin-accent); box-shadow: 0 0 0 3px rgba(23, 74, 122, 0.12); }
       .form-actions { display: flex; justify-content: flex-end; }
+      .close-panel-btn, .secondary-btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 16px; border: 1px solid var(--admin-border); border-radius: 12px; background: #ffffff; color: var(--admin-accent); text-decoration: none; font-weight: 700; cursor: pointer; }
+      .close-panel-btn:hover, .secondary-btn:hover { background: #f4f8fc; }
+      .current-image-card { padding: 16px; border: 1px solid var(--admin-border); border-radius: 16px; background: #ffffff; }
+      .current-image-preview { width: 100%; max-width: 220px; height: auto; border: 1px solid var(--admin-border); border-radius: 14px; display: block; }
       .panel-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 24px 24px 0; }
       .panel-header h2 { margin: 0; font-size: 1.35rem; }
       .panel-header p { margin: 6px 0 0; color: var(--admin-ink-soft); }
@@ -387,6 +560,8 @@ function renderAdminDashboard(bookingRows, newsRows) {
       .news-item-copy h3 { margin: 0 0 8px; }
       .news-item-copy p { margin: 0; color: var(--admin-ink-soft); line-height: 1.7; }
       .news-item-meta { margin-bottom: 8px; color: var(--admin-ink-soft); font-size: 0.92rem; font-weight: 700; }
+      .news-actions { display: flex; flex-direction: column; gap: 10px; }
+      .news-actions form { margin: 0; }
       .empty-news { padding: 22px; border: 1px solid var(--admin-border); border-radius: 16px; color: var(--admin-ink-soft); background: #ffffff; }
       [hidden] { display: none !important; }
       @media (max-width: 960px) {
@@ -398,6 +573,8 @@ function renderAdminDashboard(bookingRows, newsRows) {
         .hero, .stats, .news-form-grid, .news-item { grid-template-columns: 1fr; }
         .news-thumb { width: 100%; height: 220px; }
         .form-actions { justify-content: stretch; }
+        .section-actions, .news-actions { width: 100%; }
+        .close-panel-btn, .secondary-btn { width: 100%; }
       }
     </style>
   </head>
@@ -437,38 +614,44 @@ function renderAdminDashboard(bookingRows, newsRows) {
       </section>
 
       <div class="layout">
-        <section class="admin-card composer-card" id="newsComposer" hidden>
+        <section class="admin-card composer-card" id="newsComposer" ${composerOpen ? '' : 'hidden'}>
           <div class="section-heading">
             <div>
-              <h2>Post News</h2>
+              <h2>${composerTitle}</h2>
             </div>
-            <span class="section-badge">Publishing Panel</span>
+            <div class="section-actions">
+              <span class="section-badge">${editingNews ? 'Editing' : 'Publishing'}</span>
+              <button class="close-panel-btn" id="closeComposer" type="button">Close</button>
+            </div>
           </div>
-          <form class="news-form" method="post" action="/admin/news">
+          <form class="news-form" method="post" action="/admin/news" enctype="multipart/form-data">
+            ${editingIdInput}
+            ${existingImageInput}
             <div class="news-form-grid">
               <div class="field-full">
                 <label for="newsTitle">News Title</label>
-                <input id="newsTitle" name="title" type="text" required>
+                <input id="newsTitle" name="title" type="text" value="${escapeHtml(editingNews ? editingNews.title : '')}" required>
               </div>
               <div>
                 <label for="newsAuthor">Author Name</label>
-                <input id="newsAuthor" name="author_name" type="text" required>
+                <input id="newsAuthor" name="author_name" type="text" value="${escapeHtml(editingNews ? editingNews.author_name : '')}" required>
               </div>
               <div>
                 <label for="newsDate">Date</label>
-                <input id="newsDate" name="publish_date" type="date" required>
+                <input id="newsDate" name="publish_date" type="date" value="${escapeHtml(editingNews ? editingNews.publish_date : '')}" required>
               </div>
               <div class="field-full">
-                <label for="newsImage">Image URL</label>
-                <input id="newsImage" name="image_url" type="url" placeholder="https://example.com/image.jpg" required>
+                <label for="newsImage">Image</label>
+                <input id="newsImage" name="image" type="file" accept="image/*" ${formImageRequired}>
               </div>
+              ${currentImageCard}
               <div class="field-full">
                 <label for="newsBody">Body</label>
-                <textarea id="newsBody" name="body" required></textarea>
+                <textarea id="newsBody" name="body" required>${escapeHtml(editingNews ? editingNews.body : '')}</textarea>
               </div>
             </div>
             <div class="form-actions">
-              <button class="publish-btn" type="submit">Publish Update</button>
+              <button class="publish-btn" type="submit">${submitLabel}</button>
             </div>
           </form>
         </section>
@@ -513,6 +696,7 @@ function renderAdminDashboard(bookingRows, newsRows) {
       const menuToggle = document.getElementById('adminMenuToggle');
       const menuPanel = document.getElementById('adminMenu');
       const composer = document.getElementById('newsComposer');
+      const closeComposerButton = document.getElementById('closeComposer');
 
       const setMenuState = (isOpen) => {
         menuToggle.setAttribute('aria-expanded', String(isOpen));
@@ -524,10 +708,28 @@ function renderAdminDashboard(bookingRows, newsRows) {
         composer.scrollIntoView({ behavior: 'smooth', block: 'start' });
       };
 
+      const clearComposerState = () => {
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.delete('editNews');
+        nextUrl.hash = '';
+        window.history.replaceState({}, '', nextUrl.pathname + nextUrl.search);
+      };
+
+      const closeComposer = () => {
+        composer.hidden = true;
+        clearComposerState();
+      };
+
       menuToggle.addEventListener('click', () => {
         const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
         setMenuState(!isOpen);
       });
+
+      if (closeComposerButton) {
+        closeComposerButton.addEventListener('click', () => {
+          closeComposer();
+        });
+      }
 
       menuPanel.querySelectorAll('[data-target]').forEach((button) => {
         button.addEventListener('click', () => {
@@ -678,7 +880,7 @@ async function handleAdminLogin(request, response) {
   redirect(response, '/admin');
 }
 
-async function handleAdminDashboard(request, response) {
+async function handleAdminDashboard(request, response, requestUrl) {
   const cookies = parseCookies(request);
   if (!verifySessionToken(cookies[cookieName])) {
     redirect(response, '/admin/login');
@@ -704,8 +906,16 @@ async function handleAdminDashboard(request, response) {
        ORDER BY publish_date DESC, created_at DESC`
     );
 
+    const editNewsId = Number(requestUrl.searchParams.get('editNews'));
+    const editingNews = Number.isInteger(editNewsId) && editNewsId > 0
+      ? newsResult.rows.find((row) => Number(row.id) === editNewsId) || null
+      : null;
+
     response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    response.end(renderAdminDashboard(bookingResult.rows, newsResult.rows));
+    response.end(renderAdminDashboard(bookingResult.rows, newsResult.rows, {
+      editingNews,
+      composerOpen: Boolean(editingNews)
+    }));
   } catch (error) {
     console.error('Admin query failed:', error);
     response.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -727,14 +937,16 @@ async function handleAdminNewsCreate(request, response) {
   }
 
   try {
-    const body = await readRequestBody(request);
-    const form = new URLSearchParams(body);
+    const form = await parseMultipartForm(request);
+    const newsId = Number(form.id || '');
+    const existingImageUrl = String(form.existing_image_url || '').trim();
+    const uploadedImageUrl = String(form.image_url || '').trim();
     const newsItem = {
-      title: String(form.get('title') || '').trim(),
-      body: String(form.get('body') || '').trim(),
-      image_url: String(form.get('image_url') || '').trim(),
-      publish_date: String(form.get('publish_date') || '').trim(),
-      author_name: String(form.get('author_name') || '').trim()
+      title: String(form.title || '').trim(),
+      body: String(form.body || '').trim(),
+      image_url: uploadedImageUrl || existingImageUrl,
+      publish_date: String(form.publish_date || '').trim(),
+      author_name: String(form.author_name || '').trim()
     };
 
     const missingField = Object.entries(newsItem).find(([, value]) => !value);
@@ -744,11 +956,35 @@ async function handleAdminNewsCreate(request, response) {
       return;
     }
 
-    await pool.query(
-      `INSERT INTO news_updates (title, body, image_url, publish_date, author_name)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [newsItem.title, newsItem.body, newsItem.image_url, newsItem.publish_date, newsItem.author_name]
-    );
+    if (Number.isInteger(newsId) && newsId > 0) {
+      const existingNewsResult = await pool.query(
+        'SELECT image_url FROM news_updates WHERE id = $1',
+        [newsId]
+      );
+
+      if (!existingNewsResult.rows.length) {
+        response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+        response.end('News update not found.');
+        return;
+      }
+
+      await pool.query(
+        `UPDATE news_updates
+         SET title = $1, body = $2, image_url = $3, publish_date = $4, author_name = $5
+         WHERE id = $6`,
+        [newsItem.title, newsItem.body, newsItem.image_url, newsItem.publish_date, newsItem.author_name, newsId]
+      );
+
+      if (uploadedImageUrl && existingNewsResult.rows[0].image_url !== uploadedImageUrl) {
+        await removeManagedNewsImage(existingNewsResult.rows[0].image_url);
+      }
+    } else {
+      await pool.query(
+        `INSERT INTO news_updates (title, body, image_url, publish_date, author_name)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [newsItem.title, newsItem.body, newsItem.image_url, newsItem.publish_date, newsItem.author_name]
+      );
+    }
 
     redirect(response, '/admin');
   } catch (error) {
@@ -782,7 +1018,17 @@ async function handleAdminNewsDelete(request, response) {
       return;
     }
 
+    const existingNewsResult = await pool.query(
+      'SELECT image_url FROM news_updates WHERE id = $1',
+      [id]
+    );
+
     await pool.query('DELETE FROM news_updates WHERE id = $1', [id]);
+
+    if (existingNewsResult.rows.length) {
+      await removeManagedNewsImage(existingNewsResult.rows[0].image_url);
+    }
+
     redirect(response, '/admin');
   } catch (error) {
     console.error('Delete news failed:', error);
@@ -847,7 +1093,8 @@ async function handleAdminDelete(request, response) {
 
 const server = http.createServer(async (request, response) => {
   const method = request.method || 'GET';
-  const pathname = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`).pathname;
+  const requestUrl = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
+  const pathname = requestUrl.pathname;
 
   if (method === 'POST' && pathname === '/api/bookings') {
     await handleBookingRequest(request, response);
@@ -877,7 +1124,7 @@ const server = http.createServer(async (request, response) => {
   }
 
   if (method === 'GET' && pathname === '/admin') {
-    await handleAdminDashboard(request, response);
+    await handleAdminDashboard(request, response, requestUrl);
     return;
   }
 
