@@ -279,8 +279,14 @@ function renderAdminDashboard(rows) {
           <td>${escapeHtml(row.payment_method)}</td>
           <td>${escapeHtml(row.address)}</td>
           <td>${escapeHtml(new Date(row.created_at).toLocaleString())}</td>
+          <td>
+            <form method="post" action="/admin/delete" onsubmit="return confirm('Delete this request?');">
+              <input type="hidden" name="id" value="${escapeHtml(row.id)}">
+              <button class="delete-btn" type="submit">Delete</button>
+            </form>
+          </td>
         </tr>`).join('')
-    : '<tr><td colspan="8" style="text-align:center; padding:32px;">No requests yet.</td></tr>';
+    : '<tr><td colspan="9" style="text-align:center; padding:32px;">No requests yet.</td></tr>';
 
   return `<!DOCTYPE html>
   <html lang="en">
@@ -300,6 +306,8 @@ function renderAdminDashboard(rows) {
       th, td { padding: 16px 14px; border-bottom: 1px solid #e6ecf4; text-align: left; vertical-align: top; }
       th { background: #f1f5fb; font-size: 0.92rem; text-transform: uppercase; letter-spacing: 0.06em; }
       td { line-height: 1.5; }
+      .delete-btn { padding: 10px 14px; border: 0; border-radius: 10px; background: #b02a37; color: #fff; font-weight: 700; cursor: pointer; }
+      .delete-btn:hover { background: #951f2b; }
     </style>
   </head>
   <body>
@@ -323,6 +331,7 @@ function renderAdminDashboard(rows) {
               <th>Payment</th>
               <th>Address</th>
               <th>Submitted</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>${tableRows}</tbody>
@@ -480,6 +489,39 @@ async function handleAdminDashboard(request, response) {
   }
 }
 
+async function handleAdminDelete(request, response) {
+  const cookies = parseCookies(request);
+  if (!verifySessionToken(cookies[cookieName])) {
+    redirect(response, '/admin/login');
+    return;
+  }
+
+  if (!databaseReady || !pool) {
+    response.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' });
+    response.end('Database is not ready.');
+    return;
+  }
+
+  try {
+    const body = await readRequestBody(request);
+    const form = new URLSearchParams(body);
+    const id = Number(form.get('id'));
+
+    if (!Number.isInteger(id) || id <= 0) {
+      response.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+      response.end('Invalid request id.');
+      return;
+    }
+
+    await pool.query('DELETE FROM booking_requests WHERE id = $1', [id]);
+    redirect(response, '/admin');
+  } catch (error) {
+    console.error('Delete request failed:', error);
+    response.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+    response.end('Unable to delete request.');
+  }
+}
+
 const server = http.createServer(async (request, response) => {
   const method = request.method || 'GET';
   const pathname = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`).pathname;
@@ -508,6 +550,11 @@ const server = http.createServer(async (request, response) => {
 
   if (method === 'GET' && pathname === '/admin') {
     await handleAdminDashboard(request, response);
+    return;
+  }
+
+  if (method === 'POST' && pathname === '/admin/delete') {
+    await handleAdminDelete(request, response);
     return;
   }
 
