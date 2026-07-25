@@ -21,3 +21,9 @@ services:
         generateValue: true
       - key: DATABASE_SSL
         value: "false"
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: SENDGRID_SENDER
+        sync: false
+      - key: NOTIFY_EMAIL
+        sync: false

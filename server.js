@@ -10,6 +10,9 @@ const adminUsername = process.env.ADMIN_USERNAME || 'admin';
 const adminPassword = process.env.ADMIN_PASSWORD || '';
 const sessionSecret = process.env.SESSION_SECRET || 'change-me-in-render';
 const databaseUrl = process.env.DATABASE_URL || '';
+const sendGridApiKey = process.env.SENDGRID_API_KEY || '';
+const sendGridSender = process.env.SENDGRID_SENDER || '';
+const notifyEmail = process.env.NOTIFY_EMAIL || '';
 const cookieName = 'tbl_admin_session';
 const sessionDurationMs = 8 * 60 * 60 * 1000;
 
@@ -176,6 +179,53 @@ async function initializeDatabase() {
 
   databaseReady = true;
   databaseInitError = null;
+}
+
+async function sendBookingNotification(submission) {
+  if (!sendGridApiKey || !sendGridSender || !notifyEmail) {
+    return { skipped: true };
+  }
+
+  const message = {
+    personalizations: [
+      {
+        to: [{ email: notifyEmail }],
+        subject: 'New Booking Request'
+      }
+    ],
+    from: { email: sendGridSender, name: 'Tech Bridge Liberia Notifications' },
+    reply_to: { email: submission.email, name: submission.full_name },
+    content: [
+      {
+        type: 'text/plain',
+        value:
+          `New booking request:\n` +
+          `Name: ${submission.full_name}\n` +
+          `Email: ${submission.email}\n` +
+          `Phone: ${submission.phone}\n` +
+          `Preferred date: ${submission.preferred_service_date}\n` +
+          `Service: ${submission.service_type}\n` +
+          `Payment method: ${submission.payment_method}\n` +
+          `Address: ${submission.address}\n`
+      }
+    ]
+  };
+
+  const emailResponse = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${sendGridApiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(message)
+  });
+
+  if (!emailResponse.ok) {
+    const detail = await emailResponse.text();
+    throw new Error(`SendGrid error: ${emailResponse.status} ${detail}`);
+  }
+
+  return { skipped: false };
 }
 
 function renderAdminLogin(errorMessage) {
@@ -364,6 +414,12 @@ async function handleBookingRequest(request, response) {
         submission.address
       ]
     );
+
+    try {
+      await sendBookingNotification(submission);
+    } catch (notificationError) {
+      console.error('Booking email notification failed:', notificationError);
+    }
 
     sendJson(response, 201, { ok: true });
   } catch (error) {
