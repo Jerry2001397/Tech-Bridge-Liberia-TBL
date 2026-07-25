@@ -17,6 +17,7 @@ const notifyEmail = process.env.NOTIFY_EMAIL || '';
 const cookieName = 'tbl_admin_session';
 const sessionDurationMs = 8 * 60 * 60 * 1000;
 const newsUploadDir = path.resolve(rootDir, 'uploads', 'news');
+const newsTypes = ['Partnership', 'Event', 'Contract', 'Recruitment', 'Travels', 'Other'];
 
 const mimeTypes = {
   '.css': 'text/css; charset=utf-8',
@@ -54,6 +55,26 @@ function escapeHtml(value) {
 
 function formatMultilineHtml(value) {
   return escapeHtml(value).replace(/\r?\n/g, '<br>');
+}
+
+function formatLiberiaDateTime(value) {
+  if (!value) {
+    return '';
+  }
+
+  return new Intl.DateTimeFormat('en-LR', {
+    timeZone: 'Africa/Monrovia',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  }).format(new Date(value));
+}
+
+function normalizeNewsType(value) {
+  const normalized = String(value || '').trim();
+  return newsTypes.includes(normalized) ? normalized : 'Other';
 }
 
 function createSessionToken(username, expiresAt) {
@@ -338,9 +359,15 @@ async function initializeDatabase() {
       body TEXT NOT NULL,
       image_url TEXT NOT NULL,
       publish_date DATE NOT NULL,
+      news_type TEXT NOT NULL DEFAULT 'Other',
       author_name TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
+  `);
+
+  await pool.query(`
+    ALTER TABLE news_updates
+    ADD COLUMN IF NOT EXISTS news_type TEXT NOT NULL DEFAULT 'Other'
   `);
 
   databaseReady = true;
@@ -451,6 +478,10 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
         <img src="${escapeHtml(editingNews.image_url)}" alt="${escapeHtml(editingNews.title)}" class="current-image-preview">
       </div>`
     : '';
+  const newsTypeOptions = newsTypes.map((type) => {
+    const selected = (editingNews ? editingNews.news_type : 'Other') === type ? 'selected' : '';
+    return `<option value="${escapeHtml(type)}" ${selected}>${escapeHtml(type)}</option>`;
+  }).join('');
 
   const bookingTableRows = bookingRows.length
     ? bookingRows.map((row) => `
@@ -477,7 +508,7 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
         <article class="news-item">
           <img src="${escapeHtml(row.image_url)}" alt="${escapeHtml(row.title)}" class="news-thumb">
           <div class="news-item-copy">
-            <div class="news-item-meta">${escapeHtml(row.publish_date)} | ${escapeHtml(row.author_name)}</div>
+            <div class="news-item-meta">${escapeHtml(row.news_type || 'Other')} | ${escapeHtml(formatLiberiaDateTime(row.created_at))} | ${escapeHtml(row.author_name)}</div>
             <h3>${escapeHtml(row.title)}</h3>
             <p>${formatMultilineHtml(row.body)}</p>
           </div>
@@ -535,10 +566,10 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
       .field-full { grid-column: 1 / -1; }
       .field-caption { display: block; margin-bottom: 8px; font-weight: 700; color: var(--admin-accent); }
       .news-form label { display: block; margin-bottom: 8px; font-weight: 700; }
-      .news-form input, .news-form textarea { width: 100%; padding: 13px 14px; border: 1px solid var(--admin-border); border-radius: 12px; color: var(--admin-ink); background: #ffffff; }
+      .news-form input, .news-form textarea, .news-form select { width: 100%; padding: 13px 14px; border: 1px solid var(--admin-border); border-radius: 12px; color: var(--admin-ink); background: #ffffff; }
       .news-form input[type="file"] { padding: 11px 12px; cursor: pointer; }
       .news-form textarea { min-height: 180px; resize: vertical; }
-      .news-form input:focus, .news-form textarea:focus { outline: none; border-color: var(--admin-accent); box-shadow: 0 0 0 3px rgba(23, 74, 122, 0.12); }
+      .news-form input:focus, .news-form textarea:focus, .news-form select:focus { outline: none; border-color: var(--admin-accent); box-shadow: 0 0 0 3px rgba(23, 74, 122, 0.12); }
       .form-actions { display: flex; justify-content: flex-end; }
       .close-panel-btn, .secondary-btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 16px; border: 1px solid var(--admin-border); border-radius: 12px; background: #ffffff; color: var(--admin-accent); text-decoration: none; font-weight: 700; cursor: pointer; }
       .close-panel-btn:hover, .secondary-btn:hover { background: #f4f8fc; }
@@ -639,6 +670,12 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
               <div>
                 <label for="newsDate">Date</label>
                 <input id="newsDate" name="publish_date" type="date" value="${escapeHtml(editingNews ? editingNews.publish_date : '')}" required>
+              </div>
+              <div>
+                <label for="newsType">News Type</label>
+                <select id="newsType" name="news_type" required>
+                  ${newsTypeOptions}
+                </select>
               </div>
               <div class="field-full">
                 <label for="newsImage">Image</label>
@@ -901,7 +938,7 @@ async function handleAdminDashboard(request, response, requestUrl) {
     );
 
     const newsResult = await pool.query(
-      `SELECT id, title, body, image_url, publish_date, author_name, created_at
+      `SELECT id, title, body, image_url, publish_date, news_type, author_name, created_at
        FROM news_updates
        ORDER BY publish_date DESC, created_at DESC`
     );
@@ -946,6 +983,7 @@ async function handleAdminNewsCreate(request, response) {
       body: String(form.body || '').trim(),
       image_url: uploadedImageUrl || existingImageUrl,
       publish_date: String(form.publish_date || '').trim(),
+      news_type: normalizeNewsType(form.news_type),
       author_name: String(form.author_name || '').trim()
     };
 
@@ -970,9 +1008,9 @@ async function handleAdminNewsCreate(request, response) {
 
       await pool.query(
         `UPDATE news_updates
-         SET title = $1, body = $2, image_url = $3, publish_date = $4, author_name = $5
-         WHERE id = $6`,
-        [newsItem.title, newsItem.body, newsItem.image_url, newsItem.publish_date, newsItem.author_name, newsId]
+         SET title = $1, body = $2, image_url = $3, publish_date = $4, news_type = $5, author_name = $6
+         WHERE id = $7`,
+        [newsItem.title, newsItem.body, newsItem.image_url, newsItem.publish_date, newsItem.news_type, newsItem.author_name, newsId]
       );
 
       if (uploadedImageUrl && existingNewsResult.rows[0].image_url !== uploadedImageUrl) {
@@ -980,9 +1018,9 @@ async function handleAdminNewsCreate(request, response) {
       }
     } else {
       await pool.query(
-        `INSERT INTO news_updates (title, body, image_url, publish_date, author_name)
-         VALUES ($1, $2, $3, $4, $5)`,
-        [newsItem.title, newsItem.body, newsItem.image_url, newsItem.publish_date, newsItem.author_name]
+        `INSERT INTO news_updates (title, body, image_url, publish_date, news_type, author_name)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [newsItem.title, newsItem.body, newsItem.image_url, newsItem.publish_date, newsItem.news_type, newsItem.author_name]
       );
     }
 
@@ -1047,7 +1085,7 @@ async function handleNewsApi(response) {
 
   try {
     const result = await pool.query(
-      `SELECT id, title, body, image_url, publish_date, author_name, created_at
+      `SELECT id, title, body, image_url, publish_date, news_type, author_name, created_at
        FROM news_updates
        ORDER BY publish_date DESC, created_at DESC`
     );

@@ -19,6 +19,39 @@
             gap: 24px;
         }
 
+        .news-toolbar {
+            display: grid;
+            gap: 14px;
+        }
+
+        .news-toolbar h2 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.8rem;
+        }
+
+        .news-filter-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .news-filter {
+            padding: 10px 16px;
+            border: 1px solid rgba(15, 52, 96, 0.35);
+            border-radius: 999px;
+            background: #ffffff;
+            color: var(--primary-color);
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .news-filter.is-active {
+            background: var(--primary-color);
+            color: #ffffff;
+        }
+
         .news-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -60,6 +93,20 @@
             font-weight: 700;
             letter-spacing: 0.04em;
             text-transform: uppercase;
+        }
+
+        .news-type-badge {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            padding: 7px 12px;
+            border: 1px solid rgba(15, 52, 96, 0.24);
+            border-radius: 999px;
+            color: var(--primary-color);
+            font-size: 0.84rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
 
         .news-card-copy p {
@@ -129,6 +176,9 @@
         const menuToggle = document.getElementById('menuToggle');
         const navMenu = document.getElementById('navMenu');
         const newsContainer = document.getElementById('newsContainer');
+        const newsTypes = ['All', 'Partnership', 'Event', 'Contract', 'Recruitment', 'Travels', 'Other'];
+        let allNewsItems = [];
+        let activeNewsType = 'All';
 
         menuToggle.addEventListener('click', function() {
             navMenu.classList.toggle('active');
@@ -152,26 +202,81 @@
                 .replace(/'/g, '&#39;');
         }
 
+        function formatLiberiaDateTime(value) {
+            if (!value) {
+                return '';
+            }
+
+            return new Intl.DateTimeFormat('en-LR', {
+                timeZone: 'Africa/Monrovia',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+            }).format(new Date(value));
+        }
+
+        function normalizeNewsType(value) {
+            const normalized = String(value || '').trim();
+            return newsTypes.includes(normalized) ? normalized : 'Other';
+        }
+
+        function getFilteredItems() {
+            if (activeNewsType === 'All') {
+                return allNewsItems;
+            }
+
+            return allNewsItems.filter((item) => normalizeNewsType(item.news_type) === activeNewsType);
+        }
+
+        function renderFilters() {
+            return '<div class="news-toolbar">' +
+                '<h2>News and Updates</h2>' +
+                '<div class="news-filter-list">' +
+                newsTypes.map((type) => {
+                    const activeClass = activeNewsType === type ? ' is-active' : '';
+                    return `<button class="news-filter${activeClass}" type="button" data-news-type="${escapeHtml(type)}">${escapeHtml(type)}</button>`;
+                }).join('') +
+                '</div>' +
+            '</div>';
+        }
+
         function renderNews(items) {
+            const toolbar = renderFilters();
             if (!items.length) {
                 newsContainer.className = 'news-shell news-empty';
-                newsContainer.innerHTML = '';
+                newsContainer.innerHTML = toolbar;
+                attachFilterEvents();
                 return;
             }
 
             newsContainer.className = 'news-shell';
-            newsContainer.innerHTML = '<div class="news-grid">' + items.map((item) => {
+            newsContainer.innerHTML = toolbar + '<div class="news-grid">' + items.map((item) => {
                 const body = escapeHtml(item.body).replace(/\r?\n/g, '<br>');
+                const newsType = normalizeNewsType(item.news_type);
                 return `
                     <article class="news-card">
                         <img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.title)}">
                         <div class="news-card-copy">
-                            <div class="news-meta">${escapeHtml(item.publish_date)} | ${escapeHtml(item.author_name)}</div>
+                            <span class="news-type-badge">${escapeHtml(newsType)}</span>
+                            <div class="news-meta">${escapeHtml(formatLiberiaDateTime(item.created_at))} | ${escapeHtml(item.author_name)}</div>
                             <h2>${escapeHtml(item.title)}</h2>
                             <p>${body}</p>
                         </div>
                     </article>`;
             }).join('') + '</div>';
+            attachFilterEvents();
+        }
+
+        function attachFilterEvents() {
+            const filterButtons = newsContainer.querySelectorAll('[data-news-type]');
+            filterButtons.forEach((button) => {
+                button.addEventListener('click', function() {
+                    activeNewsType = button.getAttribute('data-news-type') || 'All';
+                    renderNews(getFilteredItems());
+                });
+            });
         }
 
         async function loadNews() {
@@ -179,15 +284,18 @@
                 const response = await fetch('/api/news');
                 if (!response.ok) {
                     newsContainer.className = 'news-shell news-empty';
-                    newsContainer.innerHTML = '';
+                    newsContainer.innerHTML = renderFilters();
+                    attachFilterEvents();
                     return;
                 }
 
                 const payload = await response.json();
-                renderNews(Array.isArray(payload.items) ? payload.items : []);
+                allNewsItems = Array.isArray(payload.items) ? payload.items : [];
+                renderNews(getFilteredItems());
             } catch (error) {
                 newsContainer.className = 'news-shell news-empty';
-                newsContainer.innerHTML = '';
+                newsContainer.innerHTML = renderFilters();
+                attachFilterEvents();
             }
         }
 
