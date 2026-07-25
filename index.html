@@ -390,6 +390,76 @@
             align-items: stretch;
         }
 
+        .staff-showcase-card {
+            position: relative;
+            width: calc(100% + 40px);
+            min-width: 0;
+            height: 360px;
+            margin: 0 -20px 36px;
+            overflow: hidden;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-white);
+            box-shadow: var(--shadow-sm);
+            display: block;
+            text-decoration: none;
+        }
+
+        .staff-showcase-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(6, 24, 44, 0.08) 0%, rgba(6, 24, 44, 0.58) 100%);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .staff-showcase-slide {
+            position: absolute;
+            inset: 0;
+            margin: 0;
+            opacity: 0;
+            animation: heroShowcaseSwap 12s infinite;
+        }
+
+        .staff-showcase-slide:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .staff-showcase-slide:nth-child(2) {
+            animation-delay: 4s;
+        }
+
+        .staff-showcase-slide:nth-child(3) {
+            animation-delay: 8s;
+        }
+
+        .staff-showcase-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .staff-showcase-caption {
+            position: absolute;
+            left: 24px;
+            right: 24px;
+            bottom: 24px;
+            z-index: 3;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            line-height: 1.4;
+            text-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+        }
+
+        .staff-showcase-card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
         .process-grid {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -463,6 +533,13 @@
         .toast.error { background: #b02a37; }
 
         @media (max-width: 900px) {
+            .staff-showcase-card {
+                height: 340px;
+                width: 100%;
+                margin-left: 0;
+                margin-right: 0;
+            }
+
             .process-grid {
                 grid-template-columns: 1fr;
             }
@@ -500,6 +577,20 @@
         }
 
         @media (max-width: 640px) {
+            .staff-showcase-card {
+                width: calc(100% + 40px);
+                height: 320px;
+                margin-left: -20px;
+                margin-right: -20px;
+            }
+
+            .staff-showcase-caption {
+                left: 18px;
+                right: 18px;
+                bottom: 18px;
+                font-size: 0.88rem;
+            }
+
             .home-hero {
                 padding: 48px 20px 70px;
             }
@@ -760,6 +851,18 @@
 
         <section class="home-process">
             <div class="container">
+                <a href="./Our Staff.html" class="staff-showcase-card" aria-label="Meet our leadership and staff">
+                    <figure class="staff-showcase-slide">
+                        <img src="./image file/E Jerry.png" alt="Mr. Emmanuel Jerry Jr">
+                    </figure>
+                    <figure class="staff-showcase-slide">
+                        <img src="./image file/FReeman.png" alt="Mr. John S Freeman">
+                    </figure>
+                    <figure class="staff-showcase-slide">
+                        <img src="./image file/George.png" alt="Mr. Wisdom George">
+                    </figure>
+                    <div class="staff-showcase-caption">Meet our leadership and staff</div>
+                </a>
                 <div class="section-intro">
                     <span class="section-kicker">How We Work</span>
                     <h2>A straightforward process from request to delivery</h2>
