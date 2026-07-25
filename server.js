@@ -50,6 +50,10 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+function formatMultilineHtml(value) {
+  return escapeHtml(value).replace(/\r?\n/g, '<br>');
+}
+
 function createSessionToken(username, expiresAt) {
   const payload = `${username}.${expiresAt}`;
   const signature = crypto
@@ -177,6 +181,18 @@ async function initializeDatabase() {
     )
   `);
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS news_updates (
+      id BIGSERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      body TEXT NOT NULL,
+      image_url TEXT NOT NULL,
+      publish_date DATE NOT NULL,
+      author_name TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
   databaseReady = true;
   databaseInitError = null;
 }
@@ -270,9 +286,9 @@ function renderAdminLogin(errorMessage) {
   </html>`;
 }
 
-function renderAdminDashboard(rows) {
-  const tableRows = rows.length
-    ? rows.map((row) => `
+function renderAdminDashboard(bookingRows, newsRows) {
+  const bookingTableRows = bookingRows.length
+    ? bookingRows.map((row) => `
         <tr>
           <td>${escapeHtml(row.full_name)}</td>
           <td>${escapeHtml(row.email)}</td>
@@ -291,6 +307,22 @@ function renderAdminDashboard(rows) {
         </tr>`).join('')
     : '<tr><td colspan="9" style="text-align:center; padding:32px;">No requests yet.</td></tr>';
 
+  const newsList = newsRows.length
+    ? newsRows.map((row) => `
+        <article class="news-item">
+          <img src="${escapeHtml(row.image_url)}" alt="${escapeHtml(row.title)}" class="news-thumb">
+          <div class="news-item-copy">
+            <div class="news-item-meta">${escapeHtml(row.publish_date)} | ${escapeHtml(row.author_name)}</div>
+            <h3>${escapeHtml(row.title)}</h3>
+            <p>${formatMultilineHtml(row.body)}</p>
+          </div>
+          <form method="post" action="/admin/news/delete" onsubmit="return confirm('Delete this news post?');">
+            <input type="hidden" name="id" value="${escapeHtml(row.id)}">
+            <button class="delete-btn" type="submit">Delete</button>
+          </form>
+        </article>`).join('')
+    : '<div class="empty-news">No news posts yet.</div>';
+
   return `<!DOCTYPE html>
   <html lang="en">
   <head>
@@ -303,9 +335,19 @@ function renderAdminDashboard(rows) {
       .page { padding: 32px 24px 48px; }
       .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
       .topbar h1 { margin: 0; font-size: 2rem; }
-      .topbar p { margin: 6px 0 0; color: var(--admin-blue-soft); }
       .logout { display: inline-flex; align-items: center; justify-content: center; padding: 12px 18px; border: 1px solid var(--admin-blue); border-radius: 10px; background: #ffffff; color: var(--admin-blue); text-decoration: none; font-weight: 700; }
       .logout:hover { background: #f4f8fc; }
+      .layout { display: grid; gap: 24px; }
+      .admin-card { background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 16px; box-shadow: 0 18px 36px rgba(15, 52, 96, 0.06); padding: 24px; }
+      .admin-card h2 { margin: 0 0 18px; font-size: 1.35rem; }
+      .news-form { display: grid; gap: 16px; }
+      .news-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+      .news-form label { display: block; margin-bottom: 8px; font-weight: 700; }
+      .news-form input, .news-form textarea { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid var(--admin-border); border-radius: 10px; font: inherit; color: var(--admin-blue); background: #ffffff; }
+      .news-form textarea { min-height: 160px; resize: vertical; }
+      .news-form input:focus, .news-form textarea:focus { outline: none; border-color: var(--admin-blue); box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.12); }
+      .publish-btn { width: fit-content; padding: 12px 20px; border: 1px solid var(--admin-blue); border-radius: 10px; background: #ffffff; color: var(--admin-blue); font-weight: 700; cursor: pointer; }
+      .publish-btn:hover { background: #f4f8fc; }
       .panel { background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 16px; box-shadow: 0 18px 36px rgba(15, 52, 96, 0.06); overflow: auto; }
       table { width: 100%; border-collapse: collapse; min-width: 1040px; }
       th, td { padding: 16px 14px; border-bottom: 1px solid var(--admin-border); text-align: left; vertical-align: top; }
@@ -313,6 +355,18 @@ function renderAdminDashboard(rows) {
       td { line-height: 1.5; }
       .delete-btn { padding: 10px 14px; border: 0; border-radius: 10px; background: #b02a37; color: #fff; font-weight: 700; cursor: pointer; }
       .delete-btn:hover { background: #951f2b; }
+      .news-list { display: grid; gap: 16px; }
+      .news-item { display: grid; grid-template-columns: 140px 1fr auto; gap: 16px; align-items: start; padding: 16px; border: 1px solid var(--admin-border); border-radius: 14px; }
+      .news-thumb { width: 140px; height: 100px; object-fit: cover; border-radius: 12px; background: #f4f8fc; }
+      .news-item-copy h3 { margin: 0 0 8px; }
+      .news-item-copy p { margin: 0; color: var(--admin-blue-soft); line-height: 1.6; }
+      .news-item-meta { margin-bottom: 8px; color: var(--admin-blue-soft); font-size: 0.92rem; font-weight: 700; }
+      .empty-news { padding: 18px; border: 1px dashed var(--admin-border); border-radius: 14px; color: var(--admin-blue-soft); }
+      @media (max-width: 900px) {
+        .news-form-grid { grid-template-columns: 1fr; }
+        .news-item { grid-template-columns: 1fr; }
+        .news-thumb { width: 100%; height: 220px; }
+      }
     </style>
   </head>
   <body>
@@ -323,23 +377,57 @@ function renderAdminDashboard(rows) {
         </div>
         <a class="logout" href="/admin/logout">Logout</a>
       </div>
-      <div class="panel">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Preferred Date</th>
-              <th>Service</th>
-              <th>Payment</th>
-              <th>Address</th>
-              <th>Submitted</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>${tableRows}</tbody>
-        </table>
+      <div class="layout">
+        <section class="admin-card">
+          <h2>Post News and Updates</h2>
+          <form class="news-form" method="post" action="/admin/news">
+            <div>
+              <label for="newsTitle">News Title</label>
+              <input id="newsTitle" name="title" type="text" required>
+            </div>
+            <div class="news-form-grid">
+              <div>
+                <label for="newsAuthor">Author Name</label>
+                <input id="newsAuthor" name="author_name" type="text" required>
+              </div>
+              <div>
+                <label for="newsDate">Date</label>
+                <input id="newsDate" name="publish_date" type="date" required>
+              </div>
+            </div>
+            <div>
+              <label for="newsImage">Image URL</label>
+              <input id="newsImage" name="image_url" type="url" placeholder="https://example.com/image.jpg" required>
+            </div>
+            <div>
+              <label for="newsBody">Body</label>
+              <textarea id="newsBody" name="body" required></textarea>
+            </div>
+            <button class="publish-btn" type="submit">Publish Update</button>
+          </form>
+        </section>
+        <section class="admin-card">
+          <h2>Published News</h2>
+          <div class="news-list">${newsList}</div>
+        </section>
+        <div class="panel">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Preferred Date</th>
+                <th>Service</th>
+                <th>Payment</th>
+                <th>Address</th>
+                <th>Submitted</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>${bookingTableRows}</tbody>
+          </table>
+        </div>
       </div>
     </div>
   </body>
@@ -473,23 +561,128 @@ async function handleAdminDashboard(request, response) {
 
   if (!databaseReady || !pool) {
     response.writeHead(503, { 'Content-Type': 'text/html; charset=utf-8' });
-    response.end(renderAdminDashboard([]).replace('</p>', ` Database status: ${escapeHtml(databaseInitError ? databaseInitError.message : 'Unavailable.')}</p>`));
+    response.end(renderAdminDashboard([], []));
     return;
   }
 
   try {
-    const result = await pool.query(
+    const bookingResult = await pool.query(
       `SELECT id, full_name, email, phone, preferred_service_date, service_type, payment_method, address, created_at
        FROM booking_requests
        ORDER BY created_at DESC`
     );
 
+    const newsResult = await pool.query(
+      `SELECT id, title, body, image_url, publish_date, author_name, created_at
+       FROM news_updates
+       ORDER BY publish_date DESC, created_at DESC`
+    );
+
     response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    response.end(renderAdminDashboard(result.rows));
+    response.end(renderAdminDashboard(bookingResult.rows, newsResult.rows));
   } catch (error) {
     console.error('Admin query failed:', error);
     response.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
-    response.end(renderAdminDashboard([]));
+    response.end(renderAdminDashboard([], []));
+  }
+}
+
+async function handleAdminNewsCreate(request, response) {
+  const cookies = parseCookies(request);
+  if (!verifySessionToken(cookies[cookieName])) {
+    redirect(response, '/admin/login');
+    return;
+  }
+
+  if (!databaseReady || !pool) {
+    response.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' });
+    response.end('Database is not ready.');
+    return;
+  }
+
+  try {
+    const body = await readRequestBody(request);
+    const form = new URLSearchParams(body);
+    const newsItem = {
+      title: String(form.get('title') || '').trim(),
+      body: String(form.get('body') || '').trim(),
+      image_url: String(form.get('image_url') || '').trim(),
+      publish_date: String(form.get('publish_date') || '').trim(),
+      author_name: String(form.get('author_name') || '').trim()
+    };
+
+    const missingField = Object.entries(newsItem).find(([, value]) => !value);
+    if (missingField) {
+      response.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+      response.end(`Missing field: ${missingField[0]}`);
+      return;
+    }
+
+    await pool.query(
+      `INSERT INTO news_updates (title, body, image_url, publish_date, author_name)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [newsItem.title, newsItem.body, newsItem.image_url, newsItem.publish_date, newsItem.author_name]
+    );
+
+    redirect(response, '/admin');
+  } catch (error) {
+    console.error('Create news failed:', error);
+    response.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+    response.end('Unable to publish news update.');
+  }
+}
+
+async function handleAdminNewsDelete(request, response) {
+  const cookies = parseCookies(request);
+  if (!verifySessionToken(cookies[cookieName])) {
+    redirect(response, '/admin/login');
+    return;
+  }
+
+  if (!databaseReady || !pool) {
+    response.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' });
+    response.end('Database is not ready.');
+    return;
+  }
+
+  try {
+    const body = await readRequestBody(request);
+    const form = new URLSearchParams(body);
+    const id = Number(form.get('id'));
+
+    if (!Number.isInteger(id) || id <= 0) {
+      response.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+      response.end('Invalid news id.');
+      return;
+    }
+
+    await pool.query('DELETE FROM news_updates WHERE id = $1', [id]);
+    redirect(response, '/admin');
+  } catch (error) {
+    console.error('Delete news failed:', error);
+    response.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+    response.end('Unable to delete news update.');
+  }
+}
+
+async function handleNewsApi(response) {
+  if (!databaseReady || !pool) {
+    sendJson(response, 503, {
+      error: databaseInitError ? databaseInitError.message : 'Database is not ready.'
+    });
+    return;
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT id, title, body, image_url, publish_date, author_name, created_at
+       FROM news_updates
+       ORDER BY publish_date DESC, created_at DESC`
+    );
+    sendJson(response, 200, { items: result.rows });
+  } catch (error) {
+    console.error('News API failed:', error);
+    sendJson(response, 500, { error: 'Unable to load news updates.' });
   }
 }
 
@@ -535,6 +728,11 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
+  if (method === 'GET' && pathname === '/api/news') {
+    await handleNewsApi(response);
+    return;
+  }
+
   if (method === 'GET' && pathname === '/admin/login') {
     response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     response.end(renderAdminLogin(''));
@@ -559,6 +757,16 @@ const server = http.createServer(async (request, response) => {
 
   if (method === 'POST' && pathname === '/admin/delete') {
     await handleAdminDelete(request, response);
+    return;
+  }
+
+  if (method === 'POST' && pathname === '/admin/news') {
+    await handleAdminNewsCreate(request, response);
+    return;
+  }
+
+  if (method === 'POST' && pathname === '/admin/news/delete') {
+    await handleAdminNewsDelete(request, response);
     return;
   }
 
