@@ -1001,60 +1001,28 @@
             bookingForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
 
-                const SUPABASE_URL = 'https://tvjnltngvvzjxlmluyya.supabase.co';
-                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2am5sdG5ndnZ6anhsbWx1eXlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzOTM3MTIsImV4cCI6MjA4NTk2OTcxMn0.bJyKQlQi2n9KDfd2q1OBb0gT2mYZHGLxWnbVIcu_Sxs';
-                const EMAIL_WEBHOOK_URL = 'https://tvjnltngvvzjxlmluyya.supabase.co/functions/v1/send-booking-email';
-
-                const dbPayload = {
+                const payload = {
                     full_name: document.getElementById('name').value.trim(),
                     email: document.getElementById('email').value.trim(),
                     phone: document.getElementById('phone').value.trim(),
-                    service_type: document.getElementById('service').value
-                };
-
-                const emailPayload = {
-                    ...dbPayload,
                     preferred_service_date: document.getElementById('preferredDate').value,
+                    service_type: document.getElementById('service').value,
                     payment_method: document.getElementById('paymentMethod').value,
                     address: document.getElementById('address').value.trim()
                 };
 
                 try {
-                    const response = await fetch(SUPABASE_URL + '/rest/v1/booking_requests', {
+                    const response = await fetch('/api/bookings', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'apikey': SUPABASE_ANON_KEY,
-                            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-                            'Prefer': 'return=representation'
+                            'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify(dbPayload)
+                        body: JSON.stringify(payload)
                     });
 
                     if (!response.ok) {
-                        const errorText = await response.text();
-                        console.error('Supabase error', response.status, errorText);
-                        throw new Error('Submission failed: ' + response.status + ' ' + errorText);
-                    }
-
-                    if (EMAIL_WEBHOOK_URL) {
-                        try {
-                            const emailResponse = await fetch(EMAIL_WEBHOOK_URL, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'apikey': SUPABASE_ANON_KEY,
-                                    'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-                                },
-                                body: JSON.stringify(emailPayload)
-                            });
-                            if (!emailResponse.ok) {
-                                const emailError = await emailResponse.text();
-                                console.error('Email webhook error', emailResponse.status, emailError);
-                            }
-                        } catch (emailError) {
-                            console.error('Email webhook failed', emailError);
-                        }
+                        const errorPayload = await response.json().catch(() => ({}));
+                        throw new Error(errorPayload.error || ('Submission failed with status ' + response.status));
                     }
 
                     showToast('Thanks! Your booking request has been submitted.', 'success');
