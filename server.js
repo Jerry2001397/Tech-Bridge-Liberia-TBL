@@ -240,14 +240,17 @@ function renderAdminLogin(errorMessage) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Tech Bridge Liberia</title>
     <style>
-      body { margin: 0; font-family: Arial, sans-serif; background: #f5f8fc; color: #0f3460; }
+      :root { --admin-blue: #0f3460; --admin-blue-soft: #6b83a0; --admin-border: #d8e2ef; --admin-surface: #ffffff; }
+      body { margin: 0; font-family: Arial, sans-serif; background: #ffffff; color: var(--admin-blue); }
       .shell { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
-      .card { width: min(420px, 100%); background: #fff; border-radius: 16px; box-shadow: 0 24px 48px rgba(15, 52, 96, 0.12); padding: 32px; }
+      .card { width: min(420px, 100%); background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 16px; box-shadow: 0 24px 48px rgba(15, 52, 96, 0.08); padding: 32px; }
       h1 { margin: 0 0 10px; font-size: 1.8rem; }
-      p { color: #5f6f85; line-height: 1.6; }
+      p { color: var(--admin-blue-soft); line-height: 1.6; }
       label { display: block; margin: 16px 0 8px; font-weight: 700; }
-      input { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid #d7deea; border-radius: 10px; font-size: 1rem; }
-      button { width: 100%; margin-top: 20px; padding: 14px; border: 0; border-radius: 10px; background: #0f3460; color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer; }
+      input { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid var(--admin-border); border-radius: 10px; font-size: 1rem; color: var(--admin-blue); background: #ffffff; }
+      input:focus { outline: none; border-color: var(--admin-blue); box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.12); }
+      button { width: 100%; margin-top: 20px; padding: 14px; border: 1px solid var(--admin-blue); border-radius: 10px; background: #ffffff; color: var(--admin-blue); font-weight: 700; font-size: 1rem; cursor: pointer; }
+      button:hover { background: #f4f8fc; }
     </style>
   </head>
   <body>
@@ -295,16 +298,18 @@ function renderAdminDashboard(rows) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking Requests - Tech Bridge Liberia</title>
     <style>
-      body { margin: 0; font-family: Arial, sans-serif; background: #f5f8fc; color: #163459; }
+      :root { --admin-blue: #0f3460; --admin-blue-soft: #5f7694; --admin-border: #d8e2ef; --admin-surface: #ffffff; }
+      body { margin: 0; font-family: Arial, sans-serif; background: #ffffff; color: var(--admin-blue); }
       .page { padding: 32px 24px 48px; }
       .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
       .topbar h1 { margin: 0; font-size: 2rem; }
-      .topbar p { margin: 6px 0 0; color: #5f6f85; }
-      .logout { display: inline-flex; align-items: center; justify-content: center; padding: 12px 18px; border-radius: 10px; background: #0f3460; color: #fff; text-decoration: none; font-weight: 700; }
-      .panel { background: #fff; border-radius: 16px; box-shadow: 0 18px 36px rgba(15, 52, 96, 0.08); overflow: auto; }
+      .topbar p { margin: 6px 0 0; color: var(--admin-blue-soft); }
+      .logout { display: inline-flex; align-items: center; justify-content: center; padding: 12px 18px; border: 1px solid var(--admin-blue); border-radius: 10px; background: #ffffff; color: var(--admin-blue); text-decoration: none; font-weight: 700; }
+      .logout:hover { background: #f4f8fc; }
+      .panel { background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 16px; box-shadow: 0 18px 36px rgba(15, 52, 96, 0.06); overflow: auto; }
       table { width: 100%; border-collapse: collapse; min-width: 1040px; }
-      th, td { padding: 16px 14px; border-bottom: 1px solid #e6ecf4; text-align: left; vertical-align: top; }
-      th { background: #f1f5fb; font-size: 0.92rem; text-transform: uppercase; letter-spacing: 0.06em; }
+      th, td { padding: 16px 14px; border-bottom: 1px solid var(--admin-border); text-align: left; vertical-align: top; }
+      th { background: #ffffff; color: var(--admin-blue); font-size: 0.92rem; text-transform: uppercase; letter-spacing: 0.06em; }
       td { line-height: 1.5; }
       .delete-btn { padding: 10px 14px; border: 0; border-radius: 10px; background: #b02a37; color: #fff; font-weight: 700; cursor: pointer; }
       .delete-btn:hover { background: #951f2b; }
