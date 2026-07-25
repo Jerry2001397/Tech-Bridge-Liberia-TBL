@@ -256,10 +256,10 @@ function renderAdminLogin(errorMessage) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Tech Bridge Liberia</title>
     <style>
-      :root { --admin-blue: #0f3460; --admin-blue-soft: #6b83a0; --admin-border: #d8e2ef; --admin-surface: #ffffff; }
+      :root { --admin-blue: #0f3460; --admin-blue-soft: #6b83a0; --admin-border: #0f3460; --admin-surface: #ffffff; }
       body { margin: 0; font-family: Arial, sans-serif; background: #ffffff; color: var(--admin-blue); }
       .shell { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
-      .card { width: min(420px, 100%); background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 16px; box-shadow: 0 24px 48px rgba(15, 52, 96, 0.08); padding: 32px; }
+      .card { width: min(420px, 100%); background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 16px; box-shadow: none; padding: 32px; }
       h1 { margin: 0 0 10px; font-size: 1.8rem; }
       p { color: var(--admin-blue-soft); line-height: 1.6; }
       label { display: block; margin: 16px 0 8px; font-weight: 700; }
@@ -273,7 +273,6 @@ function renderAdminLogin(errorMessage) {
     <div class="shell">
       <form class="card" method="post" action="/admin/login">
         <h1>Admin Login</h1>
-        <p>Sign in to review booking requests submitted from the home page form.</p>
         ${message}
         <label for="username">Username</label>
         <input id="username" name="username" type="text" autocomplete="username" required>
@@ -333,27 +332,26 @@ function renderAdminDashboard(bookingRows, newsRows) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking Requests - Tech Bridge Liberia</title>
     <style>
-      :root { --admin-ink: #123252; --admin-ink-soft: #5d7390; --admin-border: #d7e2ef; --admin-surface: #ffffff; --admin-surface-soft: #f5f8fc; --admin-accent: #174a7a; --admin-shadow: 0 20px 40px rgba(18, 50, 82, 0.08); --admin-danger: #b02a37; }
+      :root { --admin-ink: #123252; --admin-ink-soft: #5d7390; --admin-border: #174a7a; --admin-surface: #ffffff; --admin-surface-soft: #ffffff; --admin-accent: #174a7a; --admin-shadow: none; --admin-danger: #b02a37; }
       * { box-sizing: border-box; }
-      body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(180deg, #f4f7fb 0%, #eef3f8 100%); color: var(--admin-ink); }
+      body { margin: 0; font-family: Arial, sans-serif; background: #ffffff; color: var(--admin-ink); }
       button, input, textarea { font: inherit; }
       .page { max-width: 1280px; margin: 0 auto; padding: 32px 24px 48px; }
       .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 24px; }
       .topbar h1 { margin: 0; font-size: clamp(1.9rem, 4vw, 2.5rem); }
-      .topbar p { margin: 10px 0 0; color: var(--admin-ink-soft); max-width: 640px; line-height: 1.6; }
       .topbar-actions { display: flex; align-items: center; gap: 12px; }
       .menu-shell { position: relative; }
       .menu-toggle, .logout, .publish-btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 18px; border: 1px solid var(--admin-accent); border-radius: 12px; background: #ffffff; color: var(--admin-accent); text-decoration: none; font-weight: 700; cursor: pointer; transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
-      .menu-toggle:hover, .logout:hover, .publish-btn:hover { background: #eef4fb; }
+      .menu-toggle:hover, .logout:hover, .publish-btn:hover { background: #f4f8fc; }
       .menu-toggle[aria-expanded="true"] { background: var(--admin-accent); color: #ffffff; }
-      .menu-panel { position: absolute; right: 0; top: calc(100% + 12px); width: 220px; padding: 10px; border: 1px solid var(--admin-border); border-radius: 16px; background: rgba(255, 255, 255, 0.98); box-shadow: var(--admin-shadow); z-index: 10; }
-      .menu-item { width: 100%; padding: 12px 14px; border: 0; border-radius: 12px; background: transparent; color: var(--admin-ink); text-align: left; cursor: pointer; }
-      .menu-item:hover { background: var(--admin-surface-soft); }
+      .menu-panel { position: absolute; right: 0; top: calc(100% + 12px); width: 220px; padding: 10px; border: 1px solid var(--admin-border); border-radius: 16px; background: #ffffff; box-shadow: var(--admin-shadow); z-index: 10; }
+      .menu-item { width: 100%; padding: 12px 14px; border: 1px solid transparent; border-radius: 12px; background: transparent; color: var(--admin-ink); text-align: left; cursor: pointer; }
+      .menu-item:hover { background: #f4f8fc; border-color: var(--admin-border); }
       .hero { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr); gap: 20px; margin-bottom: 24px; padding: 28px; }
       .hero-copy h2 { margin: 0; font-size: 1.45rem; }
       .hero-copy p { margin: 10px 0 0; color: var(--admin-ink-soft); line-height: 1.7; }
       .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-      .stat-card { padding: 18px; border: 1px solid var(--admin-border); border-radius: 16px; background: var(--admin-surface-soft); }
+      .stat-card { padding: 18px; border: 1px solid var(--admin-border); border-radius: 16px; background: #ffffff; }
       .stat-card span { display: block; color: var(--admin-ink-soft); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.08em; }
       .stat-card strong { display: block; margin-top: 8px; font-size: 2rem; }
       .layout { display: grid; gap: 24px; }
@@ -363,8 +361,8 @@ function renderAdminDashboard(bookingRows, newsRows) {
       .section-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 18px; }
       .section-heading h2 { margin: 0; font-size: 1.35rem; }
       .section-heading p { margin: 6px 0 0; color: var(--admin-ink-soft); line-height: 1.6; }
-      .section-badge { display: inline-flex; align-items: center; padding: 8px 12px; border-radius: 999px; background: var(--admin-surface-soft); color: var(--admin-accent); font-size: 0.9rem; font-weight: 700; white-space: nowrap; }
-      .composer-card { border-style: dashed; }
+      .section-badge { display: inline-flex; align-items: center; padding: 8px 12px; border: 1px solid var(--admin-border); border-radius: 999px; background: #ffffff; color: var(--admin-accent); font-size: 0.9rem; font-weight: 700; white-space: nowrap; }
+      .composer-card { border-style: solid; }
       .news-form { display: grid; gap: 20px; }
       .news-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
       .field-full { grid-column: 1 / -1; }
@@ -384,12 +382,12 @@ function renderAdminDashboard(bookingRows, newsRows) {
       .delete-btn { padding: 10px 14px; border: 0; border-radius: 10px; background: var(--admin-danger); color: #fff; font-weight: 700; cursor: pointer; }
       .delete-btn:hover { background: #951f2b; }
       .news-list { display: grid; gap: 16px; }
-      .news-item { display: grid; grid-template-columns: 160px minmax(0, 1fr) auto; gap: 18px; align-items: start; padding: 18px; border: 1px solid var(--admin-border); border-radius: 16px; background: var(--admin-surface-soft); }
-      .news-thumb { width: 160px; height: 120px; object-fit: cover; border-radius: 14px; background: #e6edf6; }
+      .news-item { display: grid; grid-template-columns: 160px minmax(0, 1fr) auto; gap: 18px; align-items: start; padding: 18px; border: 1px solid var(--admin-border); border-radius: 16px; background: #ffffff; }
+      .news-thumb { width: 160px; height: 120px; object-fit: cover; border-radius: 14px; background: #ffffff; border: 1px solid var(--admin-border); }
       .news-item-copy h3 { margin: 0 0 8px; }
       .news-item-copy p { margin: 0; color: var(--admin-ink-soft); line-height: 1.7; }
       .news-item-meta { margin-bottom: 8px; color: var(--admin-ink-soft); font-size: 0.92rem; font-weight: 700; }
-      .empty-news { padding: 22px; border: 1px dashed var(--admin-border); border-radius: 16px; color: var(--admin-ink-soft); background: var(--admin-surface-soft); }
+      .empty-news { padding: 22px; border: 1px solid var(--admin-border); border-radius: 16px; color: var(--admin-ink-soft); background: #ffffff; }
       [hidden] { display: none !important; }
       @media (max-width: 960px) {
         .topbar, .topbar-actions, .hero, .section-heading, .panel-header { flex-direction: column; align-items: stretch; }
@@ -408,7 +406,6 @@ function renderAdminDashboard(bookingRows, newsRows) {
       <div class="topbar">
         <div>
           <h1>Tech Bridge Liberia Admin</h1>
-          <p>Review client requests, manage published updates, and keep newsroom actions tucked behind a single menu for a cleaner admin flow.</p>
         </div>
         <div class="topbar-actions">
           <div class="menu-shell">
@@ -425,8 +422,7 @@ function renderAdminDashboard(bookingRows, newsRows) {
 
       <section class="admin-card hero">
         <div class="hero-copy">
-          <h2>Operations overview</h2>
-          <p>Use the menu to open the news publishing form only when needed. The rest of the dashboard stays focused on published content and incoming bookings.</p>
+          <h2>Overview</h2>
         </div>
         <div class="stats">
           <div class="stat-card">
@@ -445,7 +441,6 @@ function renderAdminDashboard(bookingRows, newsRows) {
           <div class="section-heading">
             <div>
               <h2>Post News</h2>
-              <p>Complete the fields below when you are ready to publish a new update.</p>
             </div>
             <span class="section-badge">Publishing Panel</span>
           </div>
@@ -481,7 +476,6 @@ function renderAdminDashboard(bookingRows, newsRows) {
           <div class="section-heading">
             <div>
               <h2>Published News</h2>
-              <p>Review every live post in a cleaner card layout before deciding to delete one.</p>
             </div>
             <span class="section-badge">${newsCount} Total</span>
           </div>
@@ -491,7 +485,6 @@ function renderAdminDashboard(bookingRows, newsRows) {
           <div class="panel-header">
             <div>
               <h2>Booking Requests</h2>
-              <p>All client requests remain grouped in the same dashboard for quick follow-up.</p>
             </div>
             <span class="section-badge">${bookingCount} Pending</span>
           </div>
