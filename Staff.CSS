@@ -146,12 +146,14 @@
    =================================== */
 .staff-card {
   background: var(--bg-white);
-  border-radius: 12px;
+  border-radius: 36px;
   overflow: hidden;
   box-shadow: var(--shadow-md);
   transition: all 0.4s ease;
   display: flex;
   flex-direction: column;
+  padding: 28px 24px 24px;
+  border: 1px solid rgba(15, 52, 96, 0.08);
 }
 
 .staff-card:hover {
@@ -163,8 +165,13 @@
 .staff-card-image {
   position: relative;
   overflow: hidden;
-  height: 320px;
+  width: min(280px, 100%);
+  aspect-ratio: 1;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 50%;
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border: 8px solid rgba(15, 52, 96, 0.06);
 }
 
 .staff-photo {
@@ -172,6 +179,7 @@
   height: 100%;
   object-fit: cover;
   transition: transform 0.4s ease;
+  border-radius: 50%;
 }
 
 .staff-card:hover .staff-photo {
@@ -224,7 +232,7 @@
 
 /* Staff Card Content */
 .staff-card-content {
-  padding: 32px 24px;
+  padding: 28px 8px 8px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -366,7 +374,7 @@
   }
 
   .staff-card-image {
-    height: 280px;
+    width: min(240px, 100%);
   }
 
   .staff-card-content {
@@ -412,7 +420,7 @@
   }
 
   .staff-card-image {
-    height: 240px;
+    width: min(210px, 100%);
   }
 
   .staff-card-content {
