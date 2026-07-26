@@ -433,29 +433,124 @@ function renderAdminLogin(errorMessage) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Tech Bridge Liberia</title>
     <style>
-      :root { --admin-blue: #0f3460; --admin-blue-soft: #6b83a0; --admin-border: #0f3460; --admin-surface: #ffffff; }
-      body { margin: 0; font-family: Arial, sans-serif; background: #ffffff; color: var(--admin-blue); }
-      .shell { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
-      .card { width: min(420px, 100%); background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 16px; box-shadow: none; padding: 32px; }
-      h1 { margin: 0 0 10px; font-size: 1.8rem; }
-      p { color: var(--admin-blue-soft); line-height: 1.6; }
-      label { display: block; margin: 16px 0 8px; font-weight: 700; }
-      input { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid var(--admin-border); border-radius: 10px; font-size: 1rem; color: var(--admin-blue); background: #ffffff; }
-      input:focus { outline: none; border-color: var(--admin-blue); box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.12); }
-      button { width: 100%; margin-top: 20px; padding: 14px; border: 1px solid var(--admin-blue); border-radius: 10px; background: #ffffff; color: var(--admin-blue); font-weight: 700; font-size: 1rem; cursor: pointer; }
-      button:hover { background: #f4f8fc; }
+      :root {
+        --admin-blue: #0d4f9a;
+        --admin-blue-deep: #0a2f63;
+        --admin-blue-soft: #5c7ea6;
+        --admin-border: rgba(13, 79, 154, 0.18);
+        --admin-surface: rgba(255, 255, 255, 0.96);
+        --admin-shadow: 0 22px 55px rgba(10, 47, 99, 0.16);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: radial-gradient(circle at top, rgba(13, 79, 154, 0.16), transparent 34%), linear-gradient(160deg, #eff6ff 0%, #dbeafe 48%, #f8fbff 100%);
+        color: var(--admin-blue-deep);
+      }
+      .shell {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+      .card {
+        width: min(460px, 100%);
+        background: var(--admin-surface);
+        border: 1px solid var(--admin-border);
+        border-radius: 24px;
+        box-shadow: var(--admin-shadow);
+        padding: 36px;
+        backdrop-filter: blur(10px);
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(13, 79, 154, 0.1);
+        color: var(--admin-blue);
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      h1 {
+        margin: 18px 0 10px;
+        font-size: clamp(2rem, 3vw, 2.5rem);
+        line-height: 1.1;
+      }
+      .intro {
+        margin: 0 0 24px;
+        color: var(--admin-blue-soft);
+        line-height: 1.7;
+      }
+      label {
+        display: block;
+        margin: 16px 0 8px;
+        font-weight: 700;
+        color: var(--admin-blue-deep);
+      }
+      input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid var(--admin-border);
+        border-radius: 14px;
+        font-size: 1rem;
+        color: var(--admin-blue-deep);
+        background: #ffffff;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+      }
+      input:focus {
+        outline: none;
+        border-color: var(--admin-blue);
+        box-shadow: 0 0 0 4px rgba(13, 79, 154, 0.12);
+        transform: translateY(-1px);
+      }
+      .actions {
+        margin-top: 24px;
+      }
+      button {
+        width: 100%;
+        padding: 15px;
+        border: 0;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--admin-blue) 0%, var(--admin-blue-deep) 100%);
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        box-shadow: 0 16px 30px rgba(10, 47, 99, 0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 18px 34px rgba(10, 47, 99, 0.24);
+      }
+      .powered-by {
+        margin: 14px 0 0;
+        text-align: center;
+        color: var(--admin-blue);
+        font-size: 0.95rem;
+        font-weight: 700;
+      }
     </style>
   </head>
   <body>
     <div class="shell">
       <form class="card" method="post" action="/admin/login">
-        <h1>Admin Login</h1>
+        <span class="eyebrow">Secure Portal</span>
+        <h1>Welcome Admin</h1>
+        <p class="intro">Sign in to manage bookings, publish updates, and keep the Tech Bridge Liberia platform current.</p>
         ${message}
         <label for="username">Username</label>
         <input id="username" name="username" type="text" autocomplete="username" required>
         <label for="password">Password</label>
         <input id="password" name="password" type="password" autocomplete="current-password" required>
-        <button type="submit">Login</button>
+        <div class="actions">
+          <button type="submit">Login</button>
+          <p class="powered-by">Powered by Tech Bridge Liberia-TBL</p>
+        </div>
       </form>
     </div>
   </body>
