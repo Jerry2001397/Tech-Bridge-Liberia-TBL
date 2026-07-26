@@ -103,16 +103,16 @@
 
         .project-toggle-btn {
             width: 100%;
-            border: 1px solid rgba(15, 52, 96, 0.12);
+            border: 1px solid var(--border-color);
             background: var(--bg-white);
             color: var(--primary-color);
-            border-radius: 999px;
+            border-radius: 12px;
             padding: 12px 20px;
             font-size: 0.95rem;
             font-weight: 700;
             cursor: pointer;
             transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: var(--shadow-sm);
+            box-shadow: none;
         }
 
         .project-toggle-btn:hover,
@@ -141,11 +141,11 @@
         }
 
         .portfolio-card {
-            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-            border: 1px solid rgba(15, 52, 96, 0.08);
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
             border-radius: 18px;
             padding: 30px 26px;
-            box-shadow: 0 14px 28px rgba(15, 52, 96, 0.08);
+            box-shadow: none;
             display: flex;
             flex-direction: column;
             gap: 16px;
