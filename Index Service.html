@@ -27,16 +27,6 @@
       isolation: isolate;
     }
 
-    .services-hero-content::before {
-      content: '';
-      position: absolute;
-      inset: -20px;
-      background: url("./New image file/TBL LOGO.png") center/cover no-repeat;
-      opacity: 0.12;
-      z-index: -1;
-      pointer-events: none;
-    }
-
     .services-hero::before {
       content: '';
       position: absolute;
@@ -220,10 +210,6 @@
     @media (max-width: 768px) {
       .services-hero-content {
         padding: 38px 20px;
-      }
-
-      .services-hero-content::before {
-        inset: -12px;
       }
 
       .services-hero h1 {
@@ -580,6 +566,24 @@
         </div>
 
         <div class="services-grid">
+          <div class="service-card">
+            <img src="./New image file/web-development-illustration.svg" alt="Professional web development illustration" class="service-image">
+            <div class="service-info">
+              <h3 class="service-title">Web Development</h3>
+              <p class="service-desc">Professional website design and development services that help organizations build a strong online presence with responsive, modern, and reliable web solutions.</p>
+              <a href="index.html#booking" class="service-book-btn">Book Service</a>
+            </div>
+          </div>
+
+          <div class="service-card">
+            <img src="./New image file/IMages to be added as swap and other places/Data collection Training at CU.png" alt="Data collection and analysis training" class="service-image">
+            <div class="service-info">
+              <h3 class="service-title">Data Collection and Analysis</h3>
+              <p class="service-desc">Structured data collection, cleaning, analysis, and reporting services that support informed decision-making for institutions, projects, and business operations.</p>
+              <a href="index.html#booking" class="service-book-btn">Book Service</a>
+            </div>
+          </div>
+
           <div class="service-card">
             <img src="./image file/TEACH AT CIPS.png" alt="Computer Training" class="service-image">
             <div class="service-info">
