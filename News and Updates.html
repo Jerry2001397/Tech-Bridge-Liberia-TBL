@@ -256,7 +256,7 @@
                 const body = escapeHtml(item.body).replace(/\r?\n/g, '<br>');
                 const newsType = normalizeNewsType(item.news_type);
                 return `
-                    <article class="news-card">
+                    <article class="news-card" id="news-${escapeHtml(item.id)}">
                         <img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.title)}">
                         <div class="news-card-copy">
                             <span class="news-type-badge">${escapeHtml(newsType)}</span>
@@ -267,6 +267,21 @@
                     </article>`;
             }).join('') + '</div>';
             attachFilterEvents();
+            scrollToHashTarget();
+        }
+
+        function scrollToHashTarget() {
+            const hash = window.location.hash;
+            if (!hash || !hash.startsWith('#news-')) {
+                return;
+            }
+
+            const target = document.getElementById(hash.slice(1));
+            if (!target) {
+                return;
+            }
+
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function attachFilterEvents() {

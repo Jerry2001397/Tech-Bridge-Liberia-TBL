@@ -41,6 +41,95 @@
             text-decoration: underline;
         }
 
+        .latest-news-spotlight {
+            padding: 24px 20px 0;
+        }
+
+        .latest-news-spotlight[hidden] {
+            display: none;
+        }
+
+        .latest-news-card {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+            border: 1px solid rgba(15, 52, 96, 0.12);
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(232, 242, 255, 0.96));
+            box-shadow: 0 18px 36px rgba(15, 52, 96, 0.08);
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .latest-news-card-copy {
+            min-width: 0;
+        }
+
+        .latest-news-kicker {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(15, 52, 96, 0.08);
+            color: var(--primary-color);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .latest-news-card h3 {
+            margin: 14px 0 10px;
+            color: var(--primary-color);
+            font-size: clamp(1.35rem, 2vw, 1.8rem);
+        }
+
+        .latest-news-meta {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .latest-news-card p {
+            margin: 12px 0 0;
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        .latest-news-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .latest-news-action,
+        .latest-news-link-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 140px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(15, 52, 96, 0.18);
+            background: #ffffff;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .latest-news-action:hover,
+        .latest-news-link-btn:hover {
+            transform: translateY(-2px);
+            background: #f5f9ff;
+            box-shadow: 0 14px 26px rgba(15, 52, 96, 0.12);
+        }
+
         @keyframes latestNewsTicker {
             from {
                 transform: translateX(100%);
@@ -48,6 +137,21 @@
 
             to {
                 transform: translateX(-100%);
+            }
+        }
+
+        @media (max-width: 780px) {
+            .latest-news-card {
+                grid-template-columns: 1fr;
+            }
+
+            .latest-news-actions {
+                justify-content: stretch;
+            }
+
+            .latest-news-action,
+            .latest-news-link-btn {
+                width: 100%;
             }
         }
 
@@ -744,6 +848,21 @@
     <div class="latest-news-bar" id="latestNewsBar" aria-label="Latest news update">
         <div class="latest-news-track" id="latestNewsTrack"></div>
     </div>
+    <section class="latest-news-spotlight" id="latestNewsSpotlight" hidden aria-labelledby="latestNewsSpotlightTitle">
+        <div class="latest-news-card">
+            <div class="latest-news-card-copy">
+                <span class="latest-news-kicker">Latest News</span>
+                <h3 id="latestNewsSpotlightTitle"></h3>
+                <div class="latest-news-meta" id="latestNewsMeta"></div>
+                <p id="latestNewsExcerpt"></p>
+            </div>
+            <div class="latest-news-actions">
+                <a href="./News and Updates.html" class="latest-news-link-btn" id="latestNewsReadLink">Read Full News</a>
+                <button type="button" class="latest-news-action" id="latestNewsCopyButton">Copy News Link</button>
+                <button type="button" class="latest-news-action" id="latestNewsShareButton">Share News</button>
+            </div>
+        </div>
+    </section>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     
     <main>
@@ -1015,6 +1134,14 @@
         const navMenu = document.getElementById('navMenu');
         const latestNewsBar = document.getElementById('latestNewsBar');
         const latestNewsTrack = document.getElementById('latestNewsTrack');
+        const latestNewsSpotlight = document.getElementById('latestNewsSpotlight');
+        const latestNewsTitle = document.getElementById('latestNewsSpotlightTitle');
+        const latestNewsMeta = document.getElementById('latestNewsMeta');
+        const latestNewsExcerpt = document.getElementById('latestNewsExcerpt');
+        const latestNewsReadLink = document.getElementById('latestNewsReadLink');
+        const latestNewsCopyButton = document.getElementById('latestNewsCopyButton');
+        const latestNewsShareButton = document.getElementById('latestNewsShareButton');
+        let latestNewsShareUrl = '';
         
         menuToggle.addEventListener('click', function() {
             navMenu.classList.toggle('active');
@@ -1050,6 +1177,72 @@
                 .replace(/'/g, '&#39;');
         }
 
+        function buildNewsUrl(item) {
+            return new URL(`./News and Updates.html#news-${encodeURIComponent(item.id)}`, window.location.href).toString();
+        }
+
+        function formatNewsMeta(item) {
+            const parts = [];
+            if (item.news_type) {
+                parts.push(item.news_type);
+            }
+            if (item.author_name) {
+                parts.push(item.author_name);
+            }
+            if (item.publish_date) {
+                parts.push(item.publish_date);
+            }
+            return parts.join(' | ');
+        }
+
+        function getExcerpt(body) {
+            const text = String(body || '').replace(/\s+/g, ' ').trim();
+            if (text.length <= 180) {
+                return text;
+            }
+            return text.slice(0, 177).trimEnd() + '...';
+        }
+
+        async function copyLatestNewsLink() {
+            if (!latestNewsShareUrl) return;
+
+            try {
+                await navigator.clipboard.writeText(latestNewsShareUrl);
+                showToast('News link copied.', 'success');
+            } catch (error) {
+                showToast('Unable to copy the news link.', 'error');
+            }
+        }
+
+        async function shareLatestNews() {
+            if (!latestNewsShareUrl) return;
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: latestNewsTitle ? latestNewsTitle.textContent : 'Tech Bridge Liberia News',
+                        text: latestNewsExcerpt ? latestNewsExcerpt.textContent : '',
+                        url: latestNewsShareUrl
+                    });
+                    return;
+                } catch (error) {
+                    if (error && error.name === 'AbortError') {
+                        return;
+                    }
+                }
+            }
+
+            await copyLatestNewsLink();
+        }
+
+        if (latestNewsCopyButton) {
+            latestNewsCopyButton.addEventListener('click', copyLatestNewsLink);
+        }
+
+        if (latestNewsShareButton) {
+            latestNewsShareButton.addEventListener('click', shareLatestNews);
+        }
+
         async function loadLatestNewsTicker() {
             if (!latestNewsBar || !latestNewsTrack) return;
 
@@ -1066,10 +1259,20 @@
                 }
 
                 const title = escapeHtml(items[0].title);
+                const latestItem = items[0];
+                latestNewsShareUrl = buildNewsUrl(latestItem);
                 latestNewsTrack.innerHTML =
-                    `<a href="./News and Updates.html" class="latest-news-link">${title}</a>` +
-                    `<a href="./News and Updates.html" class="latest-news-link" aria-hidden="true" tabindex="-1">${title}</a>`;
+                    `<a href="${escapeHtml(latestNewsShareUrl)}" class="latest-news-link">${title}</a>` +
+                    `<a href="${escapeHtml(latestNewsShareUrl)}" class="latest-news-link" aria-hidden="true" tabindex="-1">${title}</a>`;
                 latestNewsBar.classList.add('is-visible');
+
+                if (latestNewsSpotlight && latestNewsTitle && latestNewsMeta && latestNewsExcerpt && latestNewsReadLink) {
+                    latestNewsTitle.textContent = latestItem.title || 'Latest update';
+                    latestNewsMeta.textContent = formatNewsMeta(latestItem);
+                    latestNewsExcerpt.textContent = getExcerpt(latestItem.body);
+                    latestNewsReadLink.href = latestNewsShareUrl;
+                    latestNewsSpotlight.hidden = false;
+                }
             } catch (error) {
                 console.error('Unable to load latest news ticker', error);
             }

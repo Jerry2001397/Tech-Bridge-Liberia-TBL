@@ -560,6 +560,7 @@ function renderAdminLogin(errorMessage) {
 function renderAdminDashboard(bookingRows, newsRows, options = {}) {
   const editingNews = options.editingNews || null;
   const composerOpen = Boolean(options.composerOpen);
+  const publishedNewsOpen = Boolean(options.publishedNewsOpen);
   const bookingCount = bookingRows.length;
   const newsCount = newsRows.length;
   const composerTitle = editingNews ? 'Edit News' : 'Post News';
@@ -656,6 +657,7 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
       .section-badge { display: inline-flex; align-items: center; padding: 8px 12px; border: 1px solid var(--admin-border); border-radius: 999px; background: #ffffff; color: var(--admin-accent); font-size: 0.9rem; font-weight: 700; white-space: nowrap; }
       .composer-card { border-style: solid; }
       .section-actions { display: flex; align-items: center; gap: 10px; }
+      .section-actions-end { justify-content: flex-end; }
       .news-form { display: grid; gap: 20px; }
       .news-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
       .field-full { grid-column: 1 / -1; }
@@ -787,12 +789,15 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
             </div>
           </form>
         </section>
-        <section class="admin-card" id="publishedNews">
+        <section class="admin-card" id="publishedNews" ${publishedNewsOpen ? '' : 'hidden'}>
           <div class="section-heading">
             <div>
               <h2>Published News</h2>
             </div>
-            <span class="section-badge">${newsCount} Total</span>
+            <div class="section-actions section-actions-end">
+              <span class="section-badge">${newsCount} Total</span>
+              <button class="close-panel-btn" id="closePublishedNews" type="button">Close</button>
+            </div>
           </div>
           <div class="news-list">${newsList}</div>
         </section>
@@ -828,7 +833,10 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
       const menuToggle = document.getElementById('adminMenuToggle');
       const menuPanel = document.getElementById('adminMenu');
       const composer = document.getElementById('newsComposer');
+      const publishedNews = document.getElementById('publishedNews');
+      const bookingRequests = document.getElementById('bookingRequests');
       const closeComposerButton = document.getElementById('closeComposer');
+      const closePublishedNewsButton = document.getElementById('closePublishedNews');
 
       const setMenuState = (isOpen) => {
         menuToggle.setAttribute('aria-expanded', String(isOpen));
@@ -836,8 +844,16 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
       };
 
       const openComposer = () => {
+        publishedNews.hidden = true;
         composer.hidden = false;
         composer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+
+      const openPublishedNews = () => {
+        composer.hidden = true;
+        publishedNews.hidden = false;
+        clearComposerState();
+        publishedNews.scrollIntoView({ behavior: 'smooth', block: 'start' });
       };
 
       const clearComposerState = () => {
@@ -852,6 +868,11 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
         clearComposerState();
       };
 
+      const closePublishedNews = () => {
+        publishedNews.hidden = true;
+        bookingRequests.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+
       menuToggle.addEventListener('click', () => {
         const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
         setMenuState(!isOpen);
@@ -863,15 +884,24 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
         });
       }
 
+      if (closePublishedNewsButton) {
+        closePublishedNewsButton.addEventListener('click', () => {
+          closePublishedNews();
+        });
+      }
+
       menuPanel.querySelectorAll('[data-target]').forEach((button) => {
         button.addEventListener('click', () => {
-          const target = document.getElementById(button.getAttribute('data-target'));
+          const targetId = button.getAttribute('data-target');
+          const target = document.getElementById(targetId);
           if (!target) {
             return;
           }
 
-          if (button.getAttribute('data-target') === 'newsComposer') {
+          if (targetId === 'newsComposer') {
             openComposer();
+          } else if (targetId === 'publishedNews') {
+            openPublishedNews();
           } else {
             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
@@ -1042,11 +1072,13 @@ async function handleAdminDashboard(request, response, requestUrl) {
     const editingNews = Number.isInteger(editNewsId) && editNewsId > 0
       ? newsResult.rows.find((row) => Number(row.id) === editNewsId) || null
       : null;
+    const publishedNewsOpen = requestUrl.searchParams.get('panel') === 'publishedNews';
 
     response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     response.end(renderAdminDashboard(bookingResult.rows, newsResult.rows, {
       editingNews,
-      composerOpen: Boolean(editingNews)
+      composerOpen: Boolean(editingNews),
+      publishedNewsOpen
     }));
   } catch (error) {
     console.error('Admin query failed:', error);
