@@ -115,6 +115,38 @@
             line-height: 1.75;
         }
 
+        .news-card-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(15, 52, 96, 0.1);
+        }
+
+        .news-card-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 140px;
+            padding: 11px 16px;
+            border: 1px solid rgba(15, 52, 96, 0.2);
+            border-radius: 12px;
+            background: #ffffff;
+            color: var(--primary-color);
+            font: inherit;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .news-card-action:hover {
+            background: #f5f9ff;
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(15, 52, 96, 0.08);
+        }
+
         .news-empty {
             min-height: 40vh;
         }
@@ -132,6 +164,14 @@
 
             .news-card img {
                 height: 220px;
+            }
+
+            .news-card-actions {
+                flex-direction: column;
+            }
+
+            .news-card-action {
+                width: 100%;
             }
         }
     </style>
@@ -255,6 +295,7 @@
             newsContainer.innerHTML = toolbar + '<div class="news-grid">' + items.map((item) => {
                 const body = escapeHtml(item.body).replace(/\r?\n/g, '<br>');
                 const newsType = normalizeNewsType(item.news_type);
+                const shareUrl = buildNewsUrl(item);
                 return `
                     <article class="news-card" id="news-${escapeHtml(item.id)}">
                         <img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.title)}">
@@ -263,11 +304,57 @@
                             <div class="news-meta">${escapeHtml(formatLiberiaDateTime(item.created_at))} | ${escapeHtml(item.author_name)}</div>
                             <h2>${escapeHtml(item.title)}</h2>
                             <p>${body}</p>
+                            <div class="news-card-actions">
+                                <button class="news-card-action" type="button" data-copy-link="${escapeHtml(shareUrl)}">Copy Link</button>
+                                <button class="news-card-action" type="button" data-share-link="${escapeHtml(shareUrl)}" data-share-title="${escapeHtml(item.title)}">Share News</button>
+                            </div>
                         </div>
                     </article>`;
             }).join('') + '</div>';
             attachFilterEvents();
             scrollToHashTarget();
+        }
+
+        function buildNewsUrl(item) {
+            return new URL(`./News and Updates.html#news-${encodeURIComponent(item.id)}`, window.location.href).toString();
+        }
+
+        async function copyNewsLink(url, button) {
+            try {
+                await navigator.clipboard.writeText(url);
+                flashActionState(button, 'Copied');
+            } catch (error) {
+                flashActionState(button, 'Copy Failed');
+            }
+        }
+
+        async function shareNewsLink(url, title, button) {
+            if (navigator.share) {
+                try {
+                    await navigator.share({ title, url });
+                    return;
+                } catch (error) {
+                    if (error && error.name === 'AbortError') {
+                        return;
+                    }
+                }
+            }
+
+            await copyNewsLink(url, button);
+        }
+
+        function flashActionState(button, label) {
+            if (!button) {
+                return;
+            }
+
+            const originalLabel = button.dataset.originalLabel || button.textContent;
+            button.dataset.originalLabel = originalLabel;
+            button.textContent = label;
+            window.clearTimeout(button._resetLabelTimer);
+            button._resetLabelTimer = window.setTimeout(() => {
+                button.textContent = originalLabel;
+            }, 1800);
         }
 
         function scrollToHashTarget() {
@@ -293,6 +380,23 @@
                 });
             });
         }
+
+        newsContainer.addEventListener('click', async function(event) {
+            const copyButton = event.target.closest('[data-copy-link]');
+            if (copyButton) {
+                await copyNewsLink(copyButton.getAttribute('data-copy-link') || '', copyButton);
+                return;
+            }
+
+            const shareButton = event.target.closest('[data-share-link]');
+            if (shareButton) {
+                await shareNewsLink(
+                    shareButton.getAttribute('data-share-link') || '',
+                    shareButton.getAttribute('data-share-title') || 'Tech Bridge Liberia News',
+                    shareButton
+                );
+            }
+        });
 
         async function loadNews() {
             try {
