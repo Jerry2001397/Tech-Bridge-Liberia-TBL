@@ -463,27 +463,17 @@ function renderAdminLogin(errorMessage) {
         padding: 36px;
         backdrop-filter: blur(10px);
       }
-      .eyebrow {
-        display: inline-flex;
-        align-items: center;
-        padding: 8px 14px;
-        border-radius: 999px;
-        background: rgba(13, 79, 154, 0.1);
-        color: var(--admin-blue);
-        font-size: 0.82rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
       h1 {
         margin: 18px 0 10px;
         font-size: clamp(2rem, 3vw, 2.5rem);
         line-height: 1.1;
+        text-align: center;
       }
       .intro {
         margin: 0 0 24px;
         color: var(--admin-blue-soft);
         line-height: 1.7;
+        text-align: center;
       }
       label {
         display: block;
@@ -539,7 +529,6 @@ function renderAdminLogin(errorMessage) {
   <body>
     <div class="shell">
       <form class="card" method="post" action="/admin/login">
-        <span class="eyebrow">Secure Portal</span>
         <h1>Welcome Admin</h1>
         <p class="intro">Sign in to manage bookings, publish updates, and keep the Tech Bridge Liberia platform current.</p>
         ${message}
