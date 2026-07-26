@@ -543,14 +543,15 @@
             position: relative;
             width: calc(100% + 40px);
             min-width: 0;
-            height: 360px;
             margin: 0 -20px 36px;
+            padding: 32px;
             overflow: hidden;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-white);
-            box-shadow: var(--shadow-sm);
-            display: block;
+            border-radius: 26px;
+            border: 1px solid rgba(15, 52, 96, 0.1);
+            background: linear-gradient(145deg, #ffffff 0%, #eef5ff 100%);
+            box-shadow: 0 24px 48px rgba(15, 52, 96, 0.1);
+            display: grid;
+            gap: 28px;
             text-decoration: none;
         }
 
@@ -558,55 +559,125 @@
             content: "";
             position: absolute;
             inset: 0;
-            background: linear-gradient(180deg, rgba(6, 24, 44, 0.08) 0%, rgba(6, 24, 44, 0.58) 100%);
-            z-index: 2;
+            background: radial-gradient(circle at top right, rgba(15, 52, 96, 0.12), transparent 34%);
             pointer-events: none;
         }
 
-        .staff-showcase-slide {
-            position: absolute;
-            inset: 0;
+        .staff-showcase-header {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            gap: 10px;
+            max-width: 720px;
+        }
+
+        .staff-showcase-kicker {
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(15, 52, 96, 0.08);
+            color: var(--primary-color);
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .staff-showcase-header h3 {
             margin: 0;
-            opacity: 0;
-            animation: heroShowcaseSwap 12s infinite;
+            color: var(--primary-color);
+            font-size: clamp(1.7rem, 2.5vw, 2.2rem);
+            line-height: 1.15;
         }
 
-        .staff-showcase-slide:nth-child(1) {
-            animation-delay: 0s;
+        .staff-showcase-header p {
+            margin: 0;
+            color: var(--text-light);
+            line-height: 1.7;
+            max-width: 58ch;
         }
 
-        .staff-showcase-slide:nth-child(2) {
-            animation-delay: 4s;
+        .staff-showcase-track-group {
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
         }
 
-        .staff-showcase-slide:nth-child(3) {
-            animation-delay: 8s;
+        .staff-showcase-track {
+            display: flex;
+            gap: 18px;
+            width: max-content;
+            animation: staffTrackForward 28s linear infinite;
         }
 
-        .staff-showcase-slide img {
-            width: 100%;
-            height: 100%;
+        .staff-showcase-person {
+            flex: 0 0 clamp(148px, 20vw, 180px);
+            padding: 18px 16px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(15, 52, 96, 0.08);
+            box-shadow: 0 16px 30px rgba(15, 52, 96, 0.08);
+            display: grid;
+            gap: 12px;
+            justify-items: center;
+            text-align: center;
+        }
+
+        .staff-showcase-person img {
+            width: 112px;
+            height: 112px;
+            border-radius: 50%;
             object-fit: cover;
+            border: 4px solid rgba(15, 52, 96, 0.08);
             display: block;
         }
 
-        .staff-showcase-caption {
-            position: absolute;
-            left: 24px;
-            right: 24px;
-            bottom: 24px;
-            z-index: 3;
-            color: #fff;
+        .staff-showcase-person strong {
+            color: var(--primary-color);
             font-size: 1rem;
+            line-height: 1.35;
+        }
+
+        .staff-showcase-person span {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .staff-showcase-footer {
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary-color);
             font-weight: 700;
-            letter-spacing: 0.6px;
+            letter-spacing: 0.04em;
             text-transform: uppercase;
-            line-height: 1.4;
-            text-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+            font-size: 0.9rem;
+        }
+
+        .staff-showcase-footer::after {
+            content: "";
+            width: 42px;
+            height: 1px;
+            background: rgba(15, 52, 96, 0.28);
+        }
+
+        @keyframes staffTrackForward {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-50%);
+            }
         }
 
         .staff-showcase-card:hover {
-            box-shadow: var(--shadow-lg);
+            box-shadow: 0 28px 54px rgba(15, 52, 96, 0.14);
         }
 
         .process-grid {
@@ -683,10 +754,10 @@
 
         @media (max-width: 900px) {
             .staff-showcase-card {
-                height: 340px;
                 width: 100%;
                 margin-left: 0;
                 margin-right: 0;
+                padding: 26px 22px;
             }
 
             .process-grid {
@@ -728,16 +799,22 @@
         @media (max-width: 640px) {
             .staff-showcase-card {
                 width: calc(100% + 40px);
-                height: 320px;
                 margin-left: -20px;
                 margin-right: -20px;
+                padding: 24px 20px;
             }
 
-            .staff-showcase-caption {
-                left: 18px;
-                right: 18px;
-                bottom: 18px;
-                font-size: 0.88rem;
+            .staff-showcase-person {
+                padding: 16px 14px;
+            }
+
+            .staff-showcase-person img {
+                width: 92px;
+                height: 92px;
+            }
+
+            .staff-showcase-header h3 {
+                font-size: 1.55rem;
             }
 
             .home-hero {
@@ -1020,16 +1097,70 @@
         <section class="home-process">
             <div class="container">
                 <a href="./Our Staff.html" class="staff-showcase-card" aria-label="Meet our leadership and staff">
-                    <figure class="staff-showcase-slide">
-                        <img src="./image file/E Jerry.png" alt="Mr. Emmanuel Jerry Jr">
-                    </figure>
-                    <figure class="staff-showcase-slide">
-                        <img src="./image file/FReeman.png" alt="Mr. John S Freeman">
-                    </figure>
-                    <figure class="staff-showcase-slide">
-                        <img src="./image file/George.png" alt="Mr. Wisdom George">
-                    </figure>
-                    <div class="staff-showcase-caption">Meet our leadership and staff</div>
+                    <div class="staff-showcase-header">
+                        <span class="staff-showcase-kicker">Our Team</span>
+                        <h3>Meet the people building Tech Bridge Liberia</h3>
+                    </div>
+                    <div class="staff-showcase-track-group" aria-hidden="true">
+                        <div class="staff-showcase-track">
+                            <div class="staff-showcase-person">
+                                <img src="./image file/E Jerry.png" alt="Mr. Emmanuel Jerry Jr">
+                                <strong>Emmanuel Jerry Jr</strong>
+                                <span>Founder & CEO</span>
+                            </div>
+                            <div class="staff-showcase-person">
+                                <img src="./New image file/John S. Freeman.png" alt="Mr. John S Freeman">
+                                <strong>John S. Freeman</strong>
+                                <span>Co-founder & Technician</span>
+                            </div>
+                            <div class="staff-showcase-person">
+                                <img src="./New image file/Alpha R. Kollie.png" alt="Mr. Alpha R. Kollie">
+                                <strong>Alpha R. Kollie</strong>
+                                <span>Business Development Officer</span>
+                            </div>
+                            <div class="staff-showcase-person">
+                                <img src="./New image file/Joelyn D. Gargard.png" alt="Miss. Joelyn D. Gargard">
+                                <strong>Joelyn D. Gargard</strong>
+                                <span>Financial Officer</span>
+                            </div>
+                            <div class="staff-showcase-person">
+                                <img src="./New image file/Wisdom Georage.png" alt="Mr. Wisdom George">
+                                <strong>Wisdom George</strong>
+                                <span>Contract Technician</span>
+                            </div>
+                            <div class="staff-showcase-person">
+                                <img src="./image file/E Jerry.png" alt="Mr. Emmanuel Jerry Jr">
+                                <strong>Emmanuel Jerry Jr</strong>
+                                <span>Founder & CEO</span>
+                            </div>
+                            <div class="staff-showcase-person">
+                                <img src="./New image file/John S. Freeman.png" alt="Mr. John S Freeman">
+                                <strong>John S. Freeman</strong>
+                                <span>Co-founder & Technician</span>
+                            </div>
+                            <div class="staff-showcase-person">
+                                <img src="./New image file/Alpha R. Kollie.png" alt="Mr. Alpha R. Kollie">
+                                <strong>Alpha R. Kollie</strong>
+                                <span>Business Development Officer</span>
+                            </div>
+                            <div class="staff-showcase-person">
+                                <img src="./New image file/Joelyn D. Gargard.png" alt="Miss. Joelyn D. Gargard">
+                                <strong>Joelyn D. Gargard</strong>
+                                <span>Financial Officer</span>
+                            </div>
+                            <div class="staff-showcase-person">
+                                <img src="./New image file/Wisdom Georage.png" alt="Mr. Wisdom George">
+                                <strong>Wisdom George</strong>
+                                <span>Contract Technician</span>
+                            </div>
+                            <div class="staff-showcase-person">
+                                <img src="./image file/E Jerry.png" alt="Mr. Emmanuel Jerry Jr">
+                                <strong>Emmanuel Jerry Jr</strong>
+                                <span>Founder & CEO</span>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="staff-showcase-footer">View full staff profile</span>
                 </a>
                 <div class="section-intro">
                     <span class="section-kicker">How We Work</span>
