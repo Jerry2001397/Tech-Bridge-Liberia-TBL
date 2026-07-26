@@ -401,6 +401,46 @@
             width: 100%;
         }
 
+        .feature-service-spotlight {
+            padding: 0;
+            gap: 0;
+        }
+
+        .feature-service-spotlight .feature-icon {
+            position: absolute;
+            top: 18px;
+            left: 18px;
+            z-index: 2;
+            min-width: 92px;
+            background: rgba(18, 50, 82, 0.92);
+            color: #ffffff;
+            box-shadow: 0 12px 24px rgba(15, 52, 96, 0.2);
+        }
+
+        .feature-spotlight-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            display: block;
+            background: linear-gradient(135deg, #dfefff 0%, #f5f9ff 100%);
+        }
+
+        .feature-spotlight-content {
+            padding: 28px 24px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            min-height: 240px;
+        }
+
+        .feature-spotlight-meta {
+            color: var(--secondary-color);
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
         .feature-book-btn {
             display: inline-flex;
             align-items: center;
@@ -935,6 +975,19 @@
                         <a href="#booking" class="feature-book-btn">Book Now</a>
                     </div>
                 </div>
+                <div class="feature feature-service-spotlight" id="serviceSpotlightCard">
+                    <div class="feature-icon">Live</div>
+                    <img id="serviceSpotlightImage" src="./New image file/web-development-illustration.svg" alt="Featured service" class="feature-spotlight-image">
+                    <div class="feature-spotlight-content">
+                        <span class="feature-spotlight-meta">Service Spotlight</span>
+                        <h3 id="serviceSpotlightTitle">Web Development</h3>
+                        <p id="serviceSpotlightDescription">Professional website design and development services that help organizations build a strong online presence with responsive, modern, and reliable web solutions.</p>
+                        <div class="feature-actions">
+                            <a href="./Index Service.html" class="feature-link" id="serviceSpotlightExploreLink">Explore service</a>
+                            <a href="#booking" class="feature-book-btn">Book Now</a>
+                        </div>
+                    </div>
+                </div>
                 <div class="feature">
                     <div class="feature-icon">CCTV</div>
                     <h3>CCTV Cameras Installation</h3>
@@ -1146,7 +1199,73 @@
         const navMenu = document.getElementById('navMenu');
         const latestNewsBar = document.getElementById('latestNewsBar');
         const latestNewsTrack = document.getElementById('latestNewsTrack');
+        const serviceSpotlightImage = document.getElementById('serviceSpotlightImage');
+        const serviceSpotlightTitle = document.getElementById('serviceSpotlightTitle');
+        const serviceSpotlightDescription = document.getElementById('serviceSpotlightDescription');
+        const serviceSpotlightExploreLink = document.getElementById('serviceSpotlightExploreLink');
         let latestNewsShareUrl = '';
+        const rotatingServices = [
+            {
+                title: 'Web Development',
+                description: 'Professional website design and development services that help organizations build a strong online presence with responsive, modern, and reliable web solutions.',
+                image: './New image file/web-development-illustration.svg',
+                alt: 'Professional web development illustration'
+            },
+            {
+                title: 'Data Collection and Analysis',
+                description: 'Structured data collection, cleaning, analysis, and reporting services that support informed decision-making for institutions, projects, and business operations.',
+                image: './New image file/IMages to be added as swap and other places/Data collection Training at CU.png',
+                alt: 'Data collection and analysis training'
+            },
+            {
+                title: 'Computer Training',
+                description: 'Comprehensive computer literacy and professional training programs for students and professionals at all levels.',
+                image: './image file/TEACH AT CIPS.png',
+                alt: 'Computer training'
+            },
+            {
+                title: 'Hardware Support',
+                description: 'Expert hardware diagnostics and repair services to restore your systems to optimal performance.',
+                image: './image file/H 1.png',
+                alt: 'Hardware support'
+            },
+            {
+                title: 'Software Support',
+                description: 'Professional software troubleshooting, installation, and optimization services for Windows systems.',
+                image: './image file/S 1.png',
+                alt: 'Software support'
+            },
+            {
+                title: 'Computer Lab Setup',
+                description: 'Complete planning and installation of computer labs for educational institutions and organizations.',
+                image: './image file/L 1.png',
+                alt: 'Computer lab setup'
+            },
+            {
+                title: 'CCTV Installation',
+                description: 'Professional surveillance system installation and configuration for homes and businesses.',
+                image: './image file/jerry and j red cctv.png',
+                alt: 'CCTV installation'
+            },
+            {
+                title: 'Professional Training',
+                description: 'Customized training programs in technical skills, software, and IT best practices for organizations.',
+                image: './image file/T 1.png',
+                alt: 'Professional training'
+            },
+            {
+                title: 'Advanced CCTV Systems',
+                description: 'High-security surveillance solutions with remote monitoring and advanced features for enterprises.',
+                image: './image file/C 2.png',
+                alt: 'Advanced CCTV systems'
+            },
+            {
+                title: 'Maintenance & Support',
+                description: 'Ongoing maintenance and client support services to keep your systems running smoothly.',
+                image: './image file/TS with so high.png',
+                alt: 'Maintenance and support'
+            }
+        ];
         
         menuToggle.addEventListener('click', function() {
             navMenu.classList.toggle('active');
@@ -1213,6 +1332,35 @@
             }
         }
 
+        function renderServiceSpotlight(service) {
+            if (!serviceSpotlightImage || !serviceSpotlightTitle || !serviceSpotlightDescription) {
+                return;
+            }
+
+            serviceSpotlightImage.src = service.image;
+            serviceSpotlightImage.alt = service.alt;
+            serviceSpotlightTitle.textContent = service.title;
+            serviceSpotlightDescription.textContent = service.description;
+
+            if (serviceSpotlightExploreLink) {
+                serviceSpotlightExploreLink.href = './Index Service.html';
+            }
+        }
+
+        function startServiceSpotlightRotation() {
+            if (!rotatingServices.length || !serviceSpotlightImage) {
+                return;
+            }
+
+            let serviceIndex = 0;
+            renderServiceSpotlight(rotatingServices[serviceIndex]);
+
+            window.setInterval(() => {
+                serviceIndex = (serviceIndex + 1) % rotatingServices.length;
+                renderServiceSpotlight(rotatingServices[serviceIndex]);
+            }, 10000);
+        }
+
         const bookingForm = document.getElementById('bookingForm');
         const preferredDateInput = document.getElementById('preferredDate');
 
@@ -1258,6 +1406,7 @@
         }
 
         loadLatestNewsTicker();
+        startServiceSpotlightRotation();
     </script>
     <script src="./active-nav.js"></script>
 </body>
