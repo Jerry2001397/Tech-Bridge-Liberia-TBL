@@ -519,9 +519,10 @@ function renderNewsArticlePage(item, request) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${escapeHtml(pageTitle)}</title>
     <meta name="description" content="${escapeHtml(description)}">
+    <meta name="application-name" content="techbridgeliberia.com">
     <link rel="canonical" href="${escapeHtml(articleUrl)}">
     <meta property="og:type" content="article">
-    <meta property="og:site_name" content="Tech Bridge Liberia">
+    <meta property="og:site_name" content="techbridgeliberia.com">
     <meta property="og:title" content="${escapeHtml(item.title)}">
     <meta property="og:description" content="${escapeHtml(description)}">
     <meta property="og:url" content="${escapeHtml(articleUrl)}">
@@ -531,6 +532,8 @@ function renderNewsArticlePage(item, request) {
     <meta property="og:image:alt" content="${escapeHtml(item.title)}">
     <meta property="article:published_time" content="${escapeHtml(publishedAt)}">
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:domain" content="techbridgeliberia.com">
+    <meta name="twitter:site" content="techbridgeliberia.com">
     <meta name="twitter:title" content="${escapeHtml(item.title)}">
     <meta name="twitter:description" content="${escapeHtml(description)}">
     <meta name="twitter:image" content="${escapeHtml(imageUrl)}">
