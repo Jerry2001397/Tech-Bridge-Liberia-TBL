@@ -101,6 +101,10 @@
             background: #eef4fb;
         }
 
+        .feature-news-image[hidden] {
+            display: none;
+        }
+
         .feature-news-meta {
             display: inline-flex;
             align-items: center;
@@ -1072,7 +1076,7 @@
                 </div>
                 <article class="feature feature-news-spotlight" id="homeNewsSpotlightCard" aria-live="polite">
                     <span class="feature-news-kicker">Latest Update</span>
-                    <img id="homeNewsSpotlightImage" src="./New image file/web-development-illustration.svg" alt="Latest news update" class="feature-news-image">
+                    <img id="homeNewsSpotlightImage" src="" alt="Latest news update" class="feature-news-image" hidden>
                     <div class="feature-news-copy">
                         <span class="feature-news-type-badge" id="homeNewsSpotlightType">News</span>
                         <div class="feature-news-meta">
@@ -1337,6 +1341,7 @@
         const navMenu = document.getElementById('navMenu');
         const latestNewsBar = document.getElementById('latestNewsBar');
         const latestNewsTrack = document.getElementById('latestNewsTrack');
+        const homeNewsSpotlightCard = document.getElementById('homeNewsSpotlightCard');
         const serviceSpotlightImage = document.getElementById('serviceSpotlightImage');
         const serviceSpotlightTitle = document.getElementById('serviceSpotlightTitle');
         const serviceSpotlightDescription = document.getElementById('serviceSpotlightDescription');
@@ -1481,6 +1486,10 @@
             return text.slice(0, maxLength - 1).trimEnd() + '...';
         }
 
+        function hasNewsImage(item) {
+            return Boolean(item && String(item.image_url || '').trim());
+        }
+
         function renderHomeNewsSpotlight(item) {
             if (!item || !homeNewsSpotlightTitle || !homeNewsSpotlightBody) {
                 return;
@@ -1492,8 +1501,16 @@
             const authorName = String(item.author_name || 'Tech Bridge Liberia').trim() || 'Tech Bridge Liberia';
 
             if (homeNewsSpotlightImage) {
-                homeNewsSpotlightImage.src = item.image_url || './New image file/web-development-illustration.svg';
-                homeNewsSpotlightImage.alt = title;
+                const imageUrl = String(item.image_url || '').trim();
+                if (imageUrl) {
+                    homeNewsSpotlightImage.src = imageUrl;
+                    homeNewsSpotlightImage.alt = title;
+                    homeNewsSpotlightImage.hidden = false;
+                } else {
+                    homeNewsSpotlightImage.removeAttribute('src');
+                    homeNewsSpotlightImage.alt = 'Latest news update';
+                    homeNewsSpotlightImage.hidden = true;
+                }
             }
 
             if (homeNewsSpotlightType) {
@@ -1521,20 +1538,32 @@
                 return;
             }
 
+            const spotlightItems = items.filter(hasNewsImage);
+            if (!spotlightItems.length) {
+                if (homeNewsSpotlightCard) {
+                    homeNewsSpotlightCard.hidden = true;
+                }
+                return;
+            }
+
+            if (homeNewsSpotlightCard) {
+                homeNewsSpotlightCard.hidden = false;
+            }
+
             if (newsRotationTimer) {
                 window.clearInterval(newsRotationTimer);
             }
 
             let newsIndex = 0;
-            renderHomeNewsSpotlight(items[newsIndex]);
+            renderHomeNewsSpotlight(spotlightItems[newsIndex]);
 
-            if (items.length === 1) {
+            if (spotlightItems.length === 1) {
                 return;
             }
 
             newsRotationTimer = window.setInterval(() => {
-                newsIndex = (newsIndex + 1) % items.length;
-                renderHomeNewsSpotlight(items[newsIndex]);
+                newsIndex = (newsIndex + 1) % spotlightItems.length;
+                renderHomeNewsSpotlight(spotlightItems[newsIndex]);
             }, 5000);
         }
 
