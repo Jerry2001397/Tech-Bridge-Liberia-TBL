@@ -31,9 +31,10 @@
         }
 
         .news-filter-list {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, max-content));
             gap: 10px;
+            align-items: start;
         }
 
         .news-filter {
@@ -155,6 +156,10 @@
             .news-grid {
                 grid-template-columns: 1fr;
             }
+
+            .news-filter-list {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
         }
 
         @media (max-width: 640px) {
@@ -172,6 +177,10 @@
 
             .news-card-action {
                 width: 100%;
+            }
+
+            .news-filter-list {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -216,7 +225,7 @@
         const menuToggle = document.getElementById('menuToggle');
         const navMenu = document.getElementById('navMenu');
         const newsContainer = document.getElementById('newsContainer');
-        const newsTypes = ['All', 'Partnership', 'Event', 'Contract', 'Recruitment', 'Travels', 'Other'];
+        const newsTypes = ['All', 'Partnership', 'Event', 'Contract', 'Recruitment', 'Travels', 'Training', 'Other'];
         let allNewsItems = [];
         let activeNewsType = 'All';
 

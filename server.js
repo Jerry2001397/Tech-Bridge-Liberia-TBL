@@ -20,7 +20,7 @@ const supabaseStorageBucket = process.env.SUPABASE_STORAGE_BUCKET || 'news-image
 const cookieName = 'tbl_admin_session';
 const sessionDurationMs = 8 * 60 * 60 * 1000;
 const newsUploadDir = path.resolve(rootDir, 'uploads', 'news');
-const newsTypes = ['Partnership', 'Event', 'Contract', 'Recruitment', 'Travels', 'Other'];
+const newsTypes = ['Partnership', 'Event', 'Contract', 'Recruitment', 'Travels', 'Training', 'Other'];
 const localNewsUploadPrefix = '/uploads/news/';
 
 const mimeTypes = {
