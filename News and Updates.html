@@ -28,11 +28,12 @@
             margin: 0;
             color: var(--primary-color);
             font-size: 1.8rem;
+            text-align: center;
         }
 
         .news-filter-list {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, max-content));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 10px;
             align-items: start;
         }
@@ -45,6 +46,7 @@
             color: var(--primary-color);
             font: inherit;
             font-weight: 700;
+            text-align: center;
             cursor: pointer;
         }
 
@@ -157,9 +159,6 @@
                 grid-template-columns: 1fr;
             }
 
-            .news-filter-list {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
         }
 
         @media (max-width: 640px) {
@@ -180,7 +179,12 @@
             }
 
             .news-filter-list {
-                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .news-filter {
+                padding: 10px 8px;
+                font-size: 0.78rem;
             }
         }
     </style>
