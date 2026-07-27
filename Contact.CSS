@@ -241,10 +241,21 @@
 }
 
 /* Social Links */
+.social-links-wrap {
+  margin-top: 40px;
+}
+
+.social-links-title {
+  margin: 0 0 16px;
+  color: var(--primary-color);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 .social-links {
   display: flex;
   gap: 12px;
-  margin-top: 40px;
   flex-wrap: wrap;
 }
 
@@ -252,14 +263,21 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
   color: white;
   text-decoration: none;
   font-size: 1.1rem;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   font-weight: 600;
+  box-shadow: 0 10px 20px rgba(15, 52, 96, 0.12);
+}
+
+.social-btn svg {
+  width: 24px;
+  height: 24px;
+  display: block;
 }
 
 .social-btn.facebook {
@@ -276,6 +294,10 @@
 
 .social-btn.linkedin {
   background: #0077b5;
+}
+
+.social-btn.tiktok {
+  background: #111111;
 }
 
 .social-btn.email {
