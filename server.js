@@ -240,6 +240,19 @@ function encodeStorageObjectPath(objectPath) {
     .join('/');
 }
 
+function getSupabaseAuthHeaders() {
+  const headers = {
+    apikey: supabaseServiceRoleKey
+  };
+
+  // New sb_secret keys are not JWTs, so they cannot be used as Bearer tokens.
+  if (!String(supabaseServiceRoleKey).startsWith('sb_secret_')) {
+    headers.Authorization = `Bearer ${supabaseServiceRoleKey}`;
+  }
+
+  return headers;
+}
+
 function buildSupabasePublicImageUrl(objectPath) {
   return `${supabaseUrl}/storage/v1/object/public/${encodeURIComponent(supabaseStorageBucket)}/${encodeStorageObjectPath(objectPath)}`;
 }
@@ -268,8 +281,7 @@ async function uploadNewsImageToSupabase(upload, fileName) {
   const uploadResponse = await fetch(uploadUrl, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${supabaseServiceRoleKey}`,
-      apikey: supabaseServiceRoleKey,
+      ...getSupabaseAuthHeaders(),
       'Content-Type': upload.mimeType,
       'x-upsert': 'false'
     },
@@ -305,10 +317,7 @@ async function removeManagedNewsImage(imageUrl) {
     const deleteUrl = `${supabaseUrl}/storage/v1/object/${encodeURIComponent(supabaseStorageBucket)}/${encodeStorageObjectPath(supabaseObjectPath)}`;
     const deleteResponse = await fetch(deleteUrl, {
       method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${supabaseServiceRoleKey}`,
-        apikey: supabaseServiceRoleKey
-      }
+      headers: getSupabaseAuthHeaders()
     });
 
     if (!deleteResponse.ok && deleteResponse.status !== 404) {
