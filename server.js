@@ -104,7 +104,9 @@ function truncateText(value, maxLength) {
 function getRequestOrigin(request) {
   const forwardedProto = String(request.headers['x-forwarded-proto'] || '').split(',')[0].trim();
   const protocol = forwardedProto || (process.env.NODE_ENV === 'production' ? 'https' : 'http');
-  return `${protocol}://${request.headers.host || 'localhost'}`;
+  const forwardedHost = String(request.headers['x-forwarded-host'] || '').split(',')[0].trim();
+  const host = (forwardedHost || String(request.headers.host || 'localhost')).toLowerCase();
+  return `${protocol}://${host}`;
 }
 
 function buildAbsoluteUrl(request, targetPath) {
