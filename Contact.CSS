@@ -65,6 +65,10 @@
   align-items: start;
 }
 
+.contact-wrapper-single {
+  grid-template-columns: 1fr;
+}
+
 .contact-form-section,
 .contact-info-section {
   position: relative;
