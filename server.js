@@ -125,6 +125,11 @@ function toAbsoluteMediaUrl(request, mediaUrl) {
   return buildAbsoluteUrl(request, String(mediaUrl));
 }
 
+function getImageMimeType(mediaUrl) {
+  const extension = path.extname(String(mediaUrl || '').split('?')[0]).toLowerCase();
+  return mimeTypes[extension] || 'image/jpeg';
+}
+
 function isCrawlerRequest(request) {
   return crawlerUserAgentPattern.test(String(request.headers['user-agent'] || ''));
 }
@@ -511,6 +516,7 @@ function renderNewsArticlePage(item, request) {
   const viewCount = Number(item.view_count) || 0;
   const shareCount = Number(item.share_count) || 0;
   const publishedAt = new Date(item.publish_date || item.created_at).toISOString();
+  const imageMimeType = getImageMimeType(imageUrl);
 
   return `<!DOCTYPE html>
   <html lang="en">
@@ -523,17 +529,24 @@ function renderNewsArticlePage(item, request) {
     <link rel="canonical" href="${escapeHtml(articleUrl)}">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="techbridgeliberia.com">
+    <meta property="og:locale" content="en_US">
     <meta property="og:title" content="${escapeHtml(item.title)}">
     <meta property="og:description" content="${escapeHtml(description)}">
     <meta property="og:url" content="${escapeHtml(articleUrl)}">
     <meta property="og:image:url" content="${escapeHtml(imageUrl)}">
     <meta property="og:image" content="${escapeHtml(imageUrl)}">
     <meta property="og:image:secure_url" content="${escapeHtml(imageUrl)}">
+    <meta property="og:image:type" content="${escapeHtml(imageMimeType)}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="${escapeHtml(item.title)}">
+    <meta property="article:author" content="${escapeHtml(item.author_name)}">
+    <meta property="article:section" content="${escapeHtml(newsType)}">
     <meta property="article:published_time" content="${escapeHtml(publishedAt)}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:domain" content="techbridgeliberia.com">
     <meta name="twitter:site" content="techbridgeliberia.com">
+    <meta name="twitter:url" content="${escapeHtml(articleUrl)}">
     <meta name="twitter:title" content="${escapeHtml(item.title)}">
     <meta name="twitter:description" content="${escapeHtml(description)}">
     <meta name="twitter:image" content="${escapeHtml(imageUrl)}">
