@@ -9,7 +9,8 @@ const port = parseInt(process.env.PORT || '3000', 10);
 const rootDir = __dirname;
 const adminUsername = process.env.ADMIN_USERNAME || 'admin';
 const adminPassword = process.env.ADMIN_PASSWORD || '';
-const sessionSecret = process.env.SESSION_SECRET || 'change-me-in-render';
+const defaultSessionSecret = 'change-me-in-render';
+const sessionSecret = process.env.SESSION_SECRET || defaultSessionSecret;
 const databaseUrl = process.env.DATABASE_URL || '';
 const sendGridApiKey = process.env.SENDGRID_API_KEY || '';
 const sendGridSender = process.env.SENDGRID_SENDER || '';
@@ -17,11 +18,15 @@ const notifyEmail = process.env.NOTIFY_EMAIL || '';
 const supabaseUrl = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const supabaseStorageBucket = process.env.SUPABASE_STORAGE_BUCKET || 'news-images';
+const isProduction = process.env.NODE_ENV === 'production';
+const configuredPublicSiteUrl = String(process.env.PUBLIC_SITE_URL || '').trim().replace(/\/+$/, '');
+const publicSiteUrl = configuredPublicSiteUrl || (isProduction ? 'https://techbridgeliberia.com' : '');
 const cookieName = 'tbl_admin_session';
 const sessionDurationMs = 8 * 60 * 60 * 1000;
 const newsUploadDir = path.resolve(rootDir, 'uploads', 'news');
 const newsTypes = ['Partnership', 'Event', 'Contract', 'Recruitment', 'Travels', 'Training', 'Other'];
 const localNewsUploadPrefix = '/uploads/news/';
+const allowedNewsImageMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
 const mimeTypes = {
   '.css': 'text/css; charset=utf-8',
@@ -101,11 +106,63 @@ function truncateText(value, maxLength) {
   return `${normalized.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
 }
 
+function constantTimeEqual(left, right) {
+  const leftBuffer = Buffer.from(String(left || ''), 'utf8');
+  const rightBuffer = Buffer.from(String(right || ''), 'utf8');
+
+  if (leftBuffer.length !== rightBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(leftBuffer, rightBuffer);
+}
+
+function isSecureAdminConfiguration() {
+  return Boolean(adminPassword) && sessionSecret !== defaultSessionSecret;
+}
+
+function normalizeHostValue(value) {
+  const candidate = String(value || '').split(',')[0].trim().toLowerCase();
+  if (!candidate || /[^a-z0-9.\-:\[\]]/i.test(candidate)) {
+    return '';
+  }
+
+  return candidate;
+}
+
+function getTrustedOriginFromHeader(value) {
+  try {
+    return new URL(String(value || '')).origin;
+  } catch (error) {
+    return '';
+  }
+}
+
+function applySecurityHeaders(response, pathname) {
+  response.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://api.sendgrid.com https://*.supabase.co; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'");
+  response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.setHeader('X-Content-Type-Options', 'nosniff');
+  response.setHeader('X-Frame-Options', 'DENY');
+  response.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  response.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+
+  if (pathname.startsWith('/admin')) {
+    response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    response.setHeader('Pragma', 'no-cache');
+    response.setHeader('Expires', '0');
+  }
+}
+
 function getRequestOrigin(request) {
+  if (publicSiteUrl) {
+    return publicSiteUrl;
+  }
+
   const forwardedProto = String(request.headers['x-forwarded-proto'] || '').split(',')[0].trim();
-  const protocol = forwardedProto || (process.env.NODE_ENV === 'production' ? 'https' : 'http');
-  const forwardedHost = String(request.headers['x-forwarded-host'] || '').split(',')[0].trim();
-  const host = (forwardedHost || String(request.headers.host || 'localhost')).toLowerCase();
+  const protocol = forwardedProto === 'https' ? 'https' : 'http';
+  const forwardedHost = normalizeHostValue(request.headers['x-forwarded-host']);
+  const requestHost = normalizeHostValue(request.headers.host);
+  const host = forwardedHost || requestHost || `localhost:${port}`;
   return `${protocol}://${host}`;
 }
 
@@ -169,15 +226,69 @@ function verifySessionToken(token) {
     .update(payload)
     .digest('hex');
 
-  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+  if (!constantTimeEqual(signature, expectedSignature)) {
     return false;
   }
 
-  if (username !== adminUsername) {
+  if (!constantTimeEqual(username, adminUsername)) {
     return false;
   }
 
   return Number(expiresAt) > Date.now();
+}
+
+function createCsrfToken(sessionToken) {
+  return crypto
+    .createHmac('sha256', sessionSecret)
+    .update(`csrf.${sessionToken}`)
+    .digest('hex');
+}
+
+function isSameOriginRequest(request) {
+  const expectedOrigin = getRequestOrigin(request);
+  const originHeader = String(request.headers.origin || '').trim();
+  if (originHeader) {
+    return constantTimeEqual(getTrustedOriginFromHeader(originHeader), expectedOrigin);
+  }
+
+  const refererHeader = String(request.headers.referer || '').trim();
+  if (refererHeader) {
+    return constantTimeEqual(getTrustedOriginFromHeader(refererHeader), expectedOrigin);
+  }
+
+  return false;
+}
+
+function getAuthenticatedSessionToken(request) {
+  const cookies = parseCookies(request);
+  const sessionToken = cookies[cookieName] || '';
+  return verifySessionToken(sessionToken) ? sessionToken : '';
+}
+
+function ensureAuthenticatedAdminRequest(request, response) {
+  const sessionToken = getAuthenticatedSessionToken(request);
+  if (!sessionToken) {
+    redirect(response, '/admin/login');
+    return '';
+  }
+
+  return sessionToken;
+}
+
+function ensureValidCsrf(request, response, csrfToken) {
+  const sessionToken = getAuthenticatedSessionToken(request);
+  if (!sessionToken) {
+    redirect(response, '/admin/login');
+    return false;
+  }
+
+  if (!isSameOriginRequest(request) || !constantTimeEqual(String(csrfToken || ''), createCsrfToken(sessionToken))) {
+    response.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
+    response.end('Forbidden');
+    return false;
+  }
+
+  return true;
 }
 
 function parseCookies(request) {
@@ -230,8 +341,6 @@ function getImageExtension(filename, mimeType) {
       return '.webp';
     case 'image/gif':
       return '.gif';
-    case 'image/svg+xml':
-      return '.svg';
     default:
       return '.bin';
   }
@@ -444,8 +553,8 @@ function parseMultipartForm(request) {
         return;
       }
 
-      if (!mimeType || !mimeType.startsWith('image/')) {
-        uploadError = new Error('Image must be a valid image file.');
+      if (!allowedNewsImageMimeTypes.has(mimeType)) {
+        uploadError = new Error('Image must be a JPG, PNG, WEBP, or GIF file.');
         file.resume();
         return;
       }
@@ -1018,6 +1127,7 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
   const editingNews = options.editingNews || null;
   const composerOpen = Boolean(options.composerOpen);
   const publishedNewsOpen = Boolean(options.publishedNewsOpen);
+  const csrfToken = options.csrfToken || '';
   const bookingCount = bookingRows.length;
   const newsCount = newsRows.length;
   const composerTitle = editingNews ? 'Edit News' : 'Post News';
@@ -1058,6 +1168,7 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
           <td>${escapeHtml(new Date(row.created_at).toLocaleString())}</td>
           <td>
             <form method="post" action="/admin/delete" onsubmit="return confirm('Delete this request?');">
+              <input type="hidden" name="_csrf" value="${escapeHtml(csrfToken)}">
               <input type="hidden" name="id" value="${escapeHtml(row.id)}">
               <button class="delete-btn" type="submit">Delete</button>
             </form>
@@ -1075,6 +1186,7 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
           <div class="news-actions">
             <a class="secondary-btn" href="/admin?editNews=${escapeHtml(row.id)}#newsComposer">Edit</a>
             <form method="post" action="/admin/news/delete" onsubmit="return confirm('Delete this news post?');">
+              <input type="hidden" name="_csrf" value="${escapeHtml(csrfToken)}">
               <input type="hidden" name="id" value="${escapeHtml(row.id)}">
               <button class="delete-btn" type="submit">Delete</button>
             </form>
@@ -1218,6 +1330,7 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
             </div>
           </div>
           <form class="news-form" method="post" action="/admin/news" enctype="multipart/form-data">
+            <input type="hidden" name="_csrf" value="${escapeHtml(csrfToken)}">
             ${editingIdInput}
             ${existingImageInput}
             <div class="news-form-grid">
@@ -1241,7 +1354,7 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
               </div>
               <div class="field-full">
                 <label for="newsImage">Image</label>
-                <input id="newsImage" name="image" type="file" accept="image/*" ${formImageRequired}>
+                <input id="newsImage" name="image" type="file" accept=".jpg,.jpeg,.png,.webp,.gif" ${formImageRequired}>
                 <p class="${storageStatusClass}" id="newsImageStatus" data-base-message="${escapeHtml(storageHealth.message)}" data-storage-target="${escapeHtml(storageTarget)}" data-base-tone="${storageHealth.isConfigured ? 'ready' : 'warning'}">${escapeHtml(storageHealth.message)}</p>
               </div>
               ${imagePreviewCard}
@@ -1410,9 +1523,9 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
             return;
           }
 
-          if (!file.type || !file.type.startsWith('image/')) {
+          if (!allowedNewsImageMimeTypes.has(file.type)) {
             resetImagePreview();
-            setImageStatus('Selected file is not a valid image. Please choose a JPG, PNG, WEBP, GIF, or SVG file.', 'warning');
+            setImageStatus('Selected file is not a valid image. Please choose a JPG, PNG, WEBP, or GIF file.', 'warning');
             newsImageInput.value = '';
             return;
           }
@@ -1525,6 +1638,11 @@ function serveStatic(request, response) {
 }
 
 async function handleBookingRequest(request, response) {
+  if (!isSameOriginRequest(request)) {
+    sendJson(response, 403, { error: 'Forbidden' });
+    return;
+  }
+
   if (!databaseReady || !pool) {
     sendJson(response, 503, {
       error: databaseInitError ? databaseInitError.message : 'Database is not ready.'
@@ -1580,18 +1698,24 @@ async function handleBookingRequest(request, response) {
 }
 
 async function handleAdminLogin(request, response) {
+  if (!isSameOriginRequest(request)) {
+    response.writeHead(403, { 'Content-Type': 'text/html; charset=utf-8' });
+    response.end(renderAdminLogin('Forbidden request origin.'));
+    return;
+  }
+
   const body = await readRequestBody(request);
   const form = new URLSearchParams(body);
   const username = form.get('username') || '';
   const password = form.get('password') || '';
 
-  if (!adminPassword) {
+  if (!isSecureAdminConfiguration()) {
     response.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
-    response.end(renderAdminLogin('ADMIN_PASSWORD is not configured on the server.'));
+    response.end(renderAdminLogin('Secure admin credentials are not fully configured on the server.'));
     return;
   }
 
-  if (username !== adminUsername || password !== adminPassword) {
+  if (!constantTimeEqual(username, adminUsername) || !constantTimeEqual(password, adminPassword)) {
     response.writeHead(401, { 'Content-Type': 'text/html; charset=utf-8' });
     response.end(renderAdminLogin('Invalid username or password.'));
     return;
@@ -1603,9 +1727,8 @@ async function handleAdminLogin(request, response) {
 }
 
 async function handleAdminDashboard(request, response, requestUrl) {
-  const cookies = parseCookies(request);
-  if (!verifySessionToken(cookies[cookieName])) {
-    redirect(response, '/admin/login');
+  const sessionToken = ensureAuthenticatedAdminRequest(request, response);
+  if (!sessionToken) {
     return;
   }
 
@@ -1636,6 +1759,7 @@ async function handleAdminDashboard(request, response, requestUrl) {
 
     response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     response.end(renderAdminDashboard(bookingResult.rows, newsResult.rows, {
+      csrfToken: createCsrfToken(sessionToken),
       editingNews,
       composerOpen: Boolean(editingNews),
       publishedNewsOpen
@@ -1648,9 +1772,8 @@ async function handleAdminDashboard(request, response, requestUrl) {
 }
 
 async function handleAdminNewsCreate(request, response) {
-  const cookies = parseCookies(request);
-  if (!verifySessionToken(cookies[cookieName])) {
-    redirect(response, '/admin/login');
+  const sessionToken = ensureAuthenticatedAdminRequest(request, response);
+  if (!sessionToken) {
     return;
   }
 
@@ -1662,6 +1785,10 @@ async function handleAdminNewsCreate(request, response) {
 
   try {
     const form = await parseMultipartForm(request);
+    if (!ensureValidCsrf(request, response, form._csrf)) {
+      return;
+    }
+
     const newsId = Number(form.id || '');
     const existingImageUrl = String(form.existing_image_url || '').trim();
     const uploadedImageUrl = String(form.image_url || '').trim();
@@ -1720,9 +1847,8 @@ async function handleAdminNewsCreate(request, response) {
 }
 
 async function handleAdminNewsDelete(request, response) {
-  const cookies = parseCookies(request);
-  if (!verifySessionToken(cookies[cookieName])) {
-    redirect(response, '/admin/login');
+  const sessionToken = ensureAuthenticatedAdminRequest(request, response);
+  if (!sessionToken) {
     return;
   }
 
@@ -1735,6 +1861,10 @@ async function handleAdminNewsDelete(request, response) {
   try {
     const body = await readRequestBody(request);
     const form = new URLSearchParams(body);
+    if (!ensureValidCsrf(request, response, form.get('_csrf'))) {
+      return;
+    }
+
     const id = Number(form.get('id'));
 
     if (!Number.isInteger(id) || id <= 0) {
@@ -1871,9 +2001,8 @@ async function handleNewsShareCount(response, newsId) {
 }
 
 async function handleAdminDelete(request, response) {
-  const cookies = parseCookies(request);
-  if (!verifySessionToken(cookies[cookieName])) {
-    redirect(response, '/admin/login');
+  const sessionToken = ensureAuthenticatedAdminRequest(request, response);
+  if (!sessionToken) {
     return;
   }
 
@@ -1886,6 +2015,10 @@ async function handleAdminDelete(request, response) {
   try {
     const body = await readRequestBody(request);
     const form = new URLSearchParams(body);
+    if (!ensureValidCsrf(request, response, form.get('_csrf'))) {
+      return;
+    }
+
     const id = Number(form.get('id'));
 
     if (!Number.isInteger(id) || id <= 0) {
@@ -1910,12 +2043,19 @@ const server = http.createServer(async (request, response) => {
   const newsArticleMatch = pathname.match(/^\/news\/(\d+)$/);
   const newsShareMatch = pathname.match(/^\/api\/news\/(\d+)\/share$/);
 
+  applySecurityHeaders(response, pathname);
+
   if (method === 'POST' && pathname === '/api/bookings') {
     await handleBookingRequest(request, response);
     return;
   }
 
   if (method === 'POST' && newsShareMatch) {
+    if (!isSameOriginRequest(request)) {
+      sendJson(response, 403, { error: 'Forbidden' });
+      return;
+    }
+
     await handleNewsShareCount(response, Number(newsShareMatch[1]));
     return;
   }
