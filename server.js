@@ -523,13 +523,16 @@ function renderNewsArticlePage(item, request) {
     <meta property="og:title" content="${escapeHtml(item.title)}">
     <meta property="og:description" content="${escapeHtml(description)}">
     <meta property="og:url" content="${escapeHtml(articleUrl)}">
+    <meta property="og:image:url" content="${escapeHtml(imageUrl)}">
     <meta property="og:image" content="${escapeHtml(imageUrl)}">
+    <meta property="og:image:secure_url" content="${escapeHtml(imageUrl)}">
     <meta property="og:image:alt" content="${escapeHtml(item.title)}">
     <meta property="article:published_time" content="${escapeHtml(publishedAt)}">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${escapeHtml(item.title)}">
     <meta name="twitter:description" content="${escapeHtml(description)}">
     <meta name="twitter:image" content="${escapeHtml(imageUrl)}">
+    <meta name="twitter:image:alt" content="${escapeHtml(item.title)}">
     <link rel="stylesheet" href="/Style.CSS">
     <style>
       .news-article-page {
