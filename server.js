@@ -14,10 +14,14 @@ const databaseUrl = process.env.DATABASE_URL || '';
 const sendGridApiKey = process.env.SENDGRID_API_KEY || '';
 const sendGridSender = process.env.SENDGRID_SENDER || '';
 const notifyEmail = process.env.NOTIFY_EMAIL || '';
+const supabaseUrl = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const supabaseStorageBucket = process.env.SUPABASE_STORAGE_BUCKET || 'news-images';
 const cookieName = 'tbl_admin_session';
 const sessionDurationMs = 8 * 60 * 60 * 1000;
 const newsUploadDir = path.resolve(rootDir, 'uploads', 'news');
 const newsTypes = ['Partnership', 'Event', 'Contract', 'Recruitment', 'Travels', 'Other'];
+const localNewsUploadPrefix = '/uploads/news/';
 
 const mimeTypes = {
   '.css': 'text/css; charset=utf-8',
@@ -172,19 +176,150 @@ function getImageExtension(filename, mimeType) {
   }
 }
 
-async function saveNewsImage(upload) {
-  await fs.promises.mkdir(newsUploadDir, { recursive: true });
+function isSupabaseStorageConfigured() {
+  return Boolean(supabaseUrl && supabaseServiceRoleKey && supabaseStorageBucket);
+}
 
+function getStorageHealthStatus() {
+  const missingEnvVars = [];
+
+  if (!supabaseUrl) {
+    missingEnvVars.push('SUPABASE_URL');
+  }
+
+  if (!supabaseServiceRoleKey) {
+    missingEnvVars.push('SUPABASE_SERVICE_ROLE_KEY');
+  }
+
+  if (!supabaseStorageBucket) {
+    missingEnvVars.push('SUPABASE_STORAGE_BUCKET');
+  }
+
+  if (missingEnvVars.length === 0) {
+    return {
+      isConfigured: true,
+      level: 'ok',
+      label: 'CDN Storage Active',
+      message: `Uploads go to Supabase bucket "${supabaseStorageBucket}" and are served from the CDN.`
+    };
+  }
+
+  if (missingEnvVars.length < 3) {
+    return {
+      isConfigured: false,
+      level: 'warning',
+      label: 'CDN Setup Incomplete',
+      message: `Missing ${missingEnvVars.join(', ')}. Uploads currently fall back to local server storage.`
+    };
+  }
+
+  return {
+    isConfigured: false,
+    level: 'warning',
+    label: 'Local Storage Fallback',
+    message: 'CDN storage is not configured yet. Uploads currently stay on local server storage.'
+  };
+}
+
+function logStartupHealthChecks() {
+  const storageHealth = getStorageHealthStatus();
+
+  if (storageHealth.isConfigured) {
+    console.log(`[startup] ${storageHealth.label}: ${storageHealth.message}`);
+    return;
+  }
+
+  console.warn(`[startup] ${storageHealth.label}: ${storageHealth.message}`);
+}
+
+function encodeStorageObjectPath(objectPath) {
+  return String(objectPath || '')
+    .split('/')
+    .filter(Boolean)
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
+}
+
+function buildSupabasePublicImageUrl(objectPath) {
+  return `${supabaseUrl}/storage/v1/object/public/${encodeURIComponent(supabaseStorageBucket)}/${encodeStorageObjectPath(objectPath)}`;
+}
+
+function getSupabaseManagedObjectPath(imageUrl) {
+  if (!isSupabaseStorageConfigured() || !imageUrl) {
+    return '';
+  }
+
+  const expectedPrefix = `${supabaseUrl}/storage/v1/object/public/${encodeURIComponent(supabaseStorageBucket)}/`;
+  if (!String(imageUrl).startsWith(expectedPrefix)) {
+    return '';
+  }
+
+  const encodedObjectPath = String(imageUrl).slice(expectedPrefix.length);
+  return encodedObjectPath
+    .split('/')
+    .filter(Boolean)
+    .map((segment) => decodeURIComponent(segment))
+    .join('/');
+}
+
+async function uploadNewsImageToSupabase(upload, fileName) {
+  const objectPath = `news/${fileName}`;
+  const uploadUrl = `${supabaseUrl}/storage/v1/object/${encodeURIComponent(supabaseStorageBucket)}/${encodeStorageObjectPath(objectPath)}`;
+  const uploadResponse = await fetch(uploadUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${supabaseServiceRoleKey}`,
+      apikey: supabaseServiceRoleKey,
+      'Content-Type': upload.mimeType,
+      'x-upsert': 'false'
+    },
+    body: upload.buffer
+  });
+
+  if (!uploadResponse.ok) {
+    const detail = await uploadResponse.text();
+    throw new Error(`Supabase storage upload failed: ${uploadResponse.status} ${detail}`);
+  }
+
+  return buildSupabasePublicImageUrl(objectPath);
+}
+
+async function saveNewsImage(upload) {
   const extension = getImageExtension(upload.filename, upload.mimeType);
   const fileName = `${Date.now()}-${sanitizeFileSegment(path.basename(upload.filename || 'image', extension))}-${crypto.randomBytes(6).toString('hex')}${extension}`;
+
+  if (isSupabaseStorageConfigured()) {
+    return uploadNewsImageToSupabase(upload, fileName);
+  }
+
+  await fs.promises.mkdir(newsUploadDir, { recursive: true });
   const targetPath = path.join(newsUploadDir, fileName);
 
   await fs.promises.writeFile(targetPath, upload.buffer);
-  return `/uploads/news/${fileName}`;
+  return `${localNewsUploadPrefix}${fileName}`;
 }
 
 async function removeManagedNewsImage(imageUrl) {
-  if (!imageUrl || !String(imageUrl).startsWith('/uploads/news/')) {
+  const supabaseObjectPath = getSupabaseManagedObjectPath(imageUrl);
+  if (supabaseObjectPath) {
+    const deleteUrl = `${supabaseUrl}/storage/v1/object/${encodeURIComponent(supabaseStorageBucket)}/${encodeStorageObjectPath(supabaseObjectPath)}`;
+    const deleteResponse = await fetch(deleteUrl, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${supabaseServiceRoleKey}`,
+        apikey: supabaseServiceRoleKey
+      }
+    });
+
+    if (!deleteResponse.ok && deleteResponse.status !== 404) {
+      const detail = await deleteResponse.text();
+      throw new Error(`Supabase storage delete failed: ${deleteResponse.status} ${detail}`);
+    }
+
+    return;
+  }
+
+  if (!imageUrl || !String(imageUrl).startsWith(localNewsUploadPrefix)) {
     return;
   }
 
@@ -548,6 +683,7 @@ function renderAdminLogin(errorMessage) {
 }
 
 function renderAdminDashboard(bookingRows, newsRows, options = {}) {
+  const storageHealth = getStorageHealthStatus();
   const editingNews = options.editingNews || null;
   const composerOpen = Boolean(options.composerOpen);
   const publishedNewsOpen = Boolean(options.publishedNewsOpen);
@@ -556,14 +692,23 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
   const composerTitle = editingNews ? 'Edit News' : 'Post News';
   const submitLabel = editingNews ? 'Save Changes' : 'Publish Update';
   const formImageRequired = editingNews ? '' : 'required';
+  const storageStatusClass = storageHealth.isConfigured ? 'upload-status is-ready' : 'upload-status is-warning';
+  const storageTarget = storageHealth.isConfigured ? 'Supabase CDN storage' : 'local server storage';
   const editingIdInput = editingNews ? `<input type="hidden" name="id" value="${escapeHtml(editingNews.id)}">` : '';
   const existingImageInput = editingNews ? `<input type="hidden" name="existing_image_url" value="${escapeHtml(editingNews.image_url)}">` : '';
-  const currentImageCard = editingNews && editingNews.image_url
-    ? `<div class="field-full current-image-card">
-        <span class="field-caption">Current Image</span>
-        <img src="${escapeHtml(editingNews.image_url)}" alt="${escapeHtml(editingNews.title)}" class="current-image-preview">
+  const imagePreviewCard = `
+      <div class="field-full current-image-card" id="newsImagePreviewCard" ${editingNews && editingNews.image_url ? '' : 'hidden'}>
+        <span class="field-caption" id="newsImagePreviewLabel">${editingNews && editingNews.image_url ? 'Current Image' : 'Selected Image Preview'}</span>
+        <img
+          src="${escapeHtml(editingNews && editingNews.image_url ? editingNews.image_url : '')}"
+          alt="${escapeHtml(editingNews ? editingNews.title : 'Selected news image preview')}"
+          class="current-image-preview"
+          id="newsImagePreview"
+          data-existing-src="${escapeHtml(editingNews && editingNews.image_url ? editingNews.image_url : '')}"
+          data-existing-alt="${escapeHtml(editingNews ? editingNews.title : 'Selected news image preview')}"
+        >
       </div>`
-    : '';
+  ;
   const newsTypeOptions = newsTypes.map((type) => {
     const selected = (editingNews ? editingNews.news_type : 'Other') === type ? 'selected' : '';
     return `<option value="${escapeHtml(type)}" ${selected}>${escapeHtml(type)}</option>`;
@@ -657,6 +802,9 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
       .news-form input[type="file"] { padding: 11px 12px; cursor: pointer; }
       .news-form textarea { min-height: 180px; resize: vertical; }
       .news-form input:focus, .news-form textarea:focus, .news-form select:focus { outline: none; border-color: var(--admin-accent); box-shadow: 0 0 0 3px rgba(23, 74, 122, 0.12); }
+      .upload-status { margin: 10px 0 0; padding: 12px 14px; border-radius: 12px; font-weight: 700; line-height: 1.5; }
+      .upload-status.is-ready { background: #edf7ed; border: 1px solid #4f8f59; color: #1f5d2c; }
+      .upload-status.is-warning { background: #fff5e8; border: 1px solid #d48806; color: #8a5a00; }
       .form-actions { display: flex; justify-content: flex-end; }
       .close-panel-btn, .secondary-btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 16px; border: 1px solid var(--admin-border); border-radius: 12px; background: #ffffff; color: var(--admin-accent); text-decoration: none; font-weight: 700; cursor: pointer; }
       .close-panel-btn:hover, .secondary-btn:hover { background: #f4f8fc; }
@@ -739,6 +887,7 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
             </div>
             <div class="section-actions">
               <span class="section-badge">${editingNews ? 'Editing' : 'Publishing'}</span>
+              <span class="section-badge">${escapeHtml(storageHealth.label)}</span>
               <button class="close-panel-btn" id="closeComposer" type="button">Close</button>
             </div>
           </div>
@@ -767,8 +916,9 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
               <div class="field-full">
                 <label for="newsImage">Image</label>
                 <input id="newsImage" name="image" type="file" accept="image/*" ${formImageRequired}>
+                <p class="${storageStatusClass}" id="newsImageStatus" data-base-message="${escapeHtml(storageHealth.message)}" data-storage-target="${escapeHtml(storageTarget)}" data-base-tone="${storageHealth.isConfigured ? 'ready' : 'warning'}">${escapeHtml(storageHealth.message)}</p>
               </div>
-              ${currentImageCard}
+              ${imagePreviewCard}
               <div class="field-full">
                 <label for="newsBody">Body</label>
                 <textarea id="newsBody" name="body" required>${escapeHtml(editingNews ? editingNews.body : '')}</textarea>
@@ -827,6 +977,12 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
       const bookingRequests = document.getElementById('bookingRequests');
       const closeComposerButton = document.getElementById('closeComposer');
       const closePublishedNewsButton = document.getElementById('closePublishedNews');
+      const newsImageInput = document.getElementById('newsImage');
+      const newsImageStatus = document.getElementById('newsImageStatus');
+      const newsImagePreviewCard = document.getElementById('newsImagePreviewCard');
+      const newsImagePreviewLabel = document.getElementById('newsImagePreviewLabel');
+      const newsImagePreview = document.getElementById('newsImagePreview');
+      let selectedPreviewUrl = '';
 
       const setMenuState = (isOpen) => {
         menuToggle.setAttribute('aria-expanded', String(isOpen));
@@ -862,6 +1018,94 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
         publishedNews.hidden = true;
         bookingRequests.scrollIntoView({ behavior: 'smooth', block: 'start' });
       };
+
+      const formatFileSize = (bytes) => {
+        if (!Number.isFinite(bytes) || bytes <= 0) {
+          return '0 KB';
+        }
+
+        if (bytes >= 1024 * 1024) {
+          return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        return String(Math.max(1, Math.round(bytes / 1024))) + ' KB';
+      };
+
+      const setImageStatus = (message, tone) => {
+        if (!newsImageStatus) {
+          return;
+        }
+
+        newsImageStatus.textContent = message;
+        newsImageStatus.classList.remove('is-ready', 'is-warning');
+        newsImageStatus.classList.add(tone === 'ready' ? 'is-ready' : 'is-warning');
+      };
+
+      const revokePreviewUrl = () => {
+        if (selectedPreviewUrl) {
+          URL.revokeObjectURL(selectedPreviewUrl);
+          selectedPreviewUrl = '';
+        }
+      };
+
+      const resetImagePreview = () => {
+        if (!newsImagePreviewCard || !newsImagePreview || !newsImagePreviewLabel) {
+          return;
+        }
+
+        revokePreviewUrl();
+        const existingSrc = newsImagePreview.dataset.existingSrc || '';
+        const existingAlt = newsImagePreview.dataset.existingAlt || 'Current news image';
+
+        if (existingSrc) {
+          newsImagePreviewCard.hidden = false;
+          newsImagePreviewLabel.textContent = 'Current Image';
+          newsImagePreview.src = existingSrc;
+          newsImagePreview.alt = existingAlt;
+          return;
+        }
+
+        newsImagePreviewCard.hidden = true;
+        newsImagePreviewLabel.textContent = 'Selected Image Preview';
+        newsImagePreview.removeAttribute('src');
+        newsImagePreview.alt = 'Selected news image preview';
+      };
+
+      if (newsImageInput) {
+        newsImageInput.addEventListener('change', () => {
+          const file = newsImageInput.files && newsImageInput.files[0];
+          const baseMessage = newsImageStatus ? newsImageStatus.dataset.baseMessage || '' : '';
+          const baseTone = newsImageStatus ? newsImageStatus.dataset.baseTone || 'warning' : 'warning';
+          const storageTargetLabel = newsImageStatus ? newsImageStatus.dataset.storageTarget || 'local server storage' : 'local server storage';
+
+          if (!file) {
+            resetImagePreview();
+            setImageStatus(baseMessage, baseTone);
+            return;
+          }
+
+          if (!file.type || !file.type.startsWith('image/')) {
+            resetImagePreview();
+            setImageStatus('Selected file is not a valid image. Please choose a JPG, PNG, WEBP, GIF, or SVG file.', 'warning');
+            newsImageInput.value = '';
+            return;
+          }
+
+          revokePreviewUrl();
+          selectedPreviewUrl = URL.createObjectURL(file);
+
+          if (newsImagePreviewCard && newsImagePreview && newsImagePreviewLabel) {
+            newsImagePreviewCard.hidden = false;
+            newsImagePreviewLabel.textContent = newsImagePreview.dataset.existingSrc ? 'New Image Preview' : 'Selected Image Preview';
+            newsImagePreview.src = selectedPreviewUrl;
+            newsImagePreview.alt = file.name;
+          }
+
+          setImageStatus(file.name + ' selected (' + formatFileSize(file.size) + '). It will upload to ' + storageTargetLabel + '.', 'ready');
+        });
+
+        resetImagePreview();
+      }
 
       menuToggle.addEventListener('click', () => {
         const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
@@ -1307,5 +1551,6 @@ initializeDatabase().catch((error) => {
 });
 
 server.listen(port, () => {
+  logStartupHealthChecks();
   console.log(`Tech Bridge server running on port ${port}`);
 });

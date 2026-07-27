@@ -27,3 +27,9 @@ services:
         sync: false
       - key: NOTIFY_EMAIL
         sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: news-images
