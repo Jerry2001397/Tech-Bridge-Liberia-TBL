@@ -144,6 +144,30 @@
             transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
         }
 
+        .news-card-action-icon {
+            width: 18px;
+            height: 18px;
+            flex: 0 0 18px;
+        }
+
+        .news-card-action-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .news-card-action-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            padding: 2px 9px;
+            border-radius: 999px;
+            background: rgba(15, 52, 96, 0.08);
+            font-size: 0.88rem;
+            line-height: 1.2;
+        }
+
         .news-card-action:hover {
             background: #f5f9ff;
             transform: translateY(-1px);
@@ -295,6 +319,23 @@
             '</div>';
         }
 
+        function toCount(value) {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+        }
+
+        function renderActionIcon(kind) {
+            if (kind === 'view') {
+                return '<svg class="news-card-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+            }
+
+            if (kind === 'copy') {
+                return '<svg class="news-card-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+            }
+
+            return '<svg class="news-card-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="M8.59 13.51 15.42 17.49"></path><path d="M15.41 6.51 8.59 10.49"></path></svg>';
+        }
+
         function renderNews(items) {
             const toolbar = renderFilters();
             if (!items.length) {
@@ -309,6 +350,8 @@
                 const body = escapeHtml(item.body).replace(/\r?\n/g, '<br>');
                 const newsType = normalizeNewsType(item.news_type);
                 const shareUrl = buildNewsUrl(item);
+                const viewCount = toCount(item.view_count);
+                const shareCount = toCount(item.share_count);
                 return `
                     <article class="news-card" id="news-${escapeHtml(item.id)}">
                         <img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.title)}">
@@ -318,8 +361,17 @@
                             <h2>${escapeHtml(item.title)}</h2>
                             <p>${body}</p>
                             <div class="news-card-actions">
-                                <button class="news-card-action" type="button" data-copy-link="${escapeHtml(shareUrl)}">Copy Link</button>
-                                <button class="news-card-action" type="button" data-share-link="${escapeHtml(shareUrl)}" data-share-title="${escapeHtml(item.title)}">Share News</button>
+                                <a class="news-card-action" href="${escapeHtml(shareUrl)}">
+                                    <span class="news-card-action-label">${renderActionIcon('view')}<span>View Article</span></span>
+                                    <span class="news-card-action-count">${viewCount}</span>
+                                </a>
+                                <button class="news-card-action" type="button" data-copy-link="${escapeHtml(shareUrl)}" data-share-id="${escapeHtml(item.id)}">
+                                    <span class="news-card-action-label">${renderActionIcon('copy')}<span data-action-label>Copy Link</span></span>
+                                </button>
+                                <button class="news-card-action" type="button" data-share-link="${escapeHtml(shareUrl)}" data-share-title="${escapeHtml(item.title)}" data-share-id="${escapeHtml(item.id)}">
+                                    <span class="news-card-action-label">${renderActionIcon('share')}<span data-action-label>Share News</span></span>
+                                    <span class="news-card-action-count" data-share-count>${shareCount}</span>
+                                </button>
                             </div>
                         </div>
                     </article>`;
@@ -329,12 +381,41 @@
         }
 
         function buildNewsUrl(item) {
-            return new URL(`./News and Updates.html#news-${encodeURIComponent(item.id)}`, window.location.href).toString();
+            return new URL(`/news/${encodeURIComponent(item.id)}`, window.location.origin).toString();
+        }
+
+        async function registerShare(articleId) {
+            const response = await fetch(`/api/news/${encodeURIComponent(articleId)}/share`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Unable to update share count.');
+            }
+
+            return response.json();
+        }
+
+        function syncShareCount(articleId, shareCount) {
+            const nextCount = toCount(shareCount);
+            const target = allNewsItems.find((item) => String(item.id) === String(articleId));
+            if (target) {
+                target.share_count = nextCount;
+            }
+
+            newsContainer.querySelectorAll(`[data-share-id="${CSS.escape(String(articleId))}"] [data-share-count]`).forEach((countNode) => {
+                countNode.textContent = String(nextCount);
+            });
         }
 
         async function copyNewsLink(url, button) {
             try {
                 await navigator.clipboard.writeText(url);
+                const payload = await registerShare(button.getAttribute('data-share-id') || '');
+                syncShareCount(button.getAttribute('data-share-id') || '', payload.share_count);
                 flashActionState(button, 'Copied');
             } catch (error) {
                 flashActionState(button, 'Copy Failed');
@@ -345,6 +426,9 @@
             if (navigator.share) {
                 try {
                     await navigator.share({ title, url });
+                    const payload = await registerShare(button.getAttribute('data-share-id') || '');
+                    syncShareCount(button.getAttribute('data-share-id') || '', payload.share_count);
+                    flashActionState(button, 'Shared');
                     return;
                 } catch (error) {
                     if (error && error.name === 'AbortError') {
@@ -361,12 +445,17 @@
                 return;
             }
 
-            const originalLabel = button.dataset.originalLabel || button.textContent;
+            const labelNode = button.querySelector('[data-action-label]');
+            if (!labelNode) {
+                return;
+            }
+
+            const originalLabel = button.dataset.originalLabel || labelNode.textContent;
             button.dataset.originalLabel = originalLabel;
-            button.textContent = label;
+            labelNode.textContent = label;
             window.clearTimeout(button._resetLabelTimer);
             button._resetLabelTimer = window.setTimeout(() => {
-                button.textContent = originalLabel;
+                labelNode.textContent = originalLabel;
             }, 1800);
         }
 

@@ -49,6 +49,8 @@ const pool = databaseUrl
 let databaseReady = false;
 let databaseInitError = null;
 
+const crawlerUserAgentPattern = /(facebookexternalhit|facebot|linkedinbot|twitterbot|xbot|whatsapp|slackbot|discordbot|telegrambot|skypeuripreview|googlebot|bingbot|embedly|pinterest|vkshare|crawler|spider|bot)/i;
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -75,6 +77,58 @@ function formatLiberiaDateTime(value) {
     hour: 'numeric',
     minute: '2-digit'
   }).format(new Date(value));
+}
+
+function formatLiberiaDate(value) {
+  if (!value) {
+    return '';
+  }
+
+  return new Intl.DateTimeFormat('en-LR', {
+    timeZone: 'Africa/Monrovia',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }).format(new Date(value));
+}
+
+function truncateText(value, maxLength) {
+  const normalized = String(value || '').replace(/\s+/g, ' ').trim();
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
+}
+
+function getRequestOrigin(request) {
+  const forwardedProto = String(request.headers['x-forwarded-proto'] || '').split(',')[0].trim();
+  const protocol = forwardedProto || (process.env.NODE_ENV === 'production' ? 'https' : 'http');
+  return `${protocol}://${request.headers.host || 'localhost'}`;
+}
+
+function buildAbsoluteUrl(request, targetPath) {
+  return new URL(targetPath, getRequestOrigin(request)).toString();
+}
+
+function toAbsoluteMediaUrl(request, mediaUrl) {
+  if (!mediaUrl) {
+    return '';
+  }
+
+  if (/^https?:\/\//i.test(String(mediaUrl))) {
+    return String(mediaUrl);
+  }
+
+  return buildAbsoluteUrl(request, String(mediaUrl));
+}
+
+function isCrawlerRequest(request) {
+  return crawlerUserAgentPattern.test(String(request.headers['user-agent'] || ''));
+}
+
+function getNewsArticlePath(newsId) {
+  return `/news/${encodeURIComponent(String(newsId))}`;
 }
 
 function normalizeNewsType(value) {
@@ -445,6 +499,243 @@ function redirect(response, location) {
   response.end();
 }
 
+function renderNewsArticlePage(item, request) {
+  const articlePath = getNewsArticlePath(item.id);
+  const articleUrl = buildAbsoluteUrl(request, articlePath);
+  const imageUrl = toAbsoluteMediaUrl(request, item.image_url);
+  const description = truncateText(item.body, 180) || 'Read the latest update from Tech Bridge Liberia.';
+  const pageTitle = `${item.title} - Tech Bridge Liberia News`;
+  const newsType = normalizeNewsType(item.news_type);
+  const viewCount = Number(item.view_count) || 0;
+  const shareCount = Number(item.share_count) || 0;
+  const publishedAt = new Date(item.publish_date || item.created_at).toISOString();
+
+  return `<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${escapeHtml(pageTitle)}</title>
+    <meta name="description" content="${escapeHtml(description)}">
+    <link rel="canonical" href="${escapeHtml(articleUrl)}">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Tech Bridge Liberia">
+    <meta property="og:title" content="${escapeHtml(item.title)}">
+    <meta property="og:description" content="${escapeHtml(description)}">
+    <meta property="og:url" content="${escapeHtml(articleUrl)}">
+    <meta property="og:image" content="${escapeHtml(imageUrl)}">
+    <meta property="og:image:alt" content="${escapeHtml(item.title)}">
+    <meta property="article:published_time" content="${escapeHtml(publishedAt)}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${escapeHtml(item.title)}">
+    <meta name="twitter:description" content="${escapeHtml(description)}">
+    <meta name="twitter:image" content="${escapeHtml(imageUrl)}">
+    <link rel="stylesheet" href="/Style.CSS">
+    <style>
+      .news-article-page {
+        min-height: 100vh;
+        padding: 64px 20px 88px;
+        background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+      }
+      .news-article-shell {
+        width: min(900px, 100%);
+        margin: 0 auto;
+        display: grid;
+        gap: 24px;
+      }
+      .news-article-card {
+        background: #ffffff;
+        border: 1px solid rgba(15, 52, 96, 0.12);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 20px 44px rgba(15, 52, 96, 0.1);
+      }
+      .news-article-card img {
+        width: 100%;
+        max-height: 480px;
+        object-fit: cover;
+        display: block;
+        background: #eef4fb;
+      }
+      .news-article-copy {
+        padding: 28px;
+        display: grid;
+        gap: 16px;
+      }
+      .news-article-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 18px;
+        color: var(--text-light);
+        font-size: 0.94rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .news-article-type {
+        display: inline-flex;
+        width: fit-content;
+        padding: 8px 13px;
+        border-radius: 999px;
+        border: 1px solid rgba(15, 52, 96, 0.18);
+        color: var(--primary-color);
+        font-weight: 700;
+      }
+      .news-article-copy h1 {
+        margin: 0;
+        color: var(--primary-color);
+        font-size: clamp(2rem, 4vw, 3rem);
+        line-height: 1.15;
+      }
+      .news-article-body {
+        color: var(--text-light);
+        line-height: 1.85;
+        font-size: 1.02rem;
+      }
+      .news-article-body p {
+        margin: 0;
+      }
+      .news-article-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding-top: 8px;
+      }
+      .news-article-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 18px;
+        border-radius: 12px;
+        border: 1px solid rgba(15, 52, 96, 0.16);
+        background: #ffffff;
+        color: var(--primary-color);
+        font: inherit;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .news-article-action:hover {
+        background: #f5f9ff;
+      }
+      @media (max-width: 640px) {
+        .news-article-page {
+          padding: 48px 18px 72px;
+        }
+        .news-article-copy {
+          padding: 22px;
+        }
+        .news-article-actions {
+          flex-direction: column;
+        }
+        .news-article-action {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <h1 class="logo">Tech Bridge LIberia-TBL</h1>
+        <nav>
+          <ul class="nav-links">
+            <li><a href="/index.html">Home</a></li>
+            <li><a href="/index about.html">About</a></li>
+            <li><a href="/Index Service.html">Services</a></li>
+            <li><a href="/Portfolia.html">Our Portfolia</a></li>
+            <li><a href="/Our Staff.html">Our Staffs</a></li>
+            <li><a href="/Contact.html">Contact</a></li>
+            <li><a href="/Policy.html">Policy</a></li>
+            <li><a href="/News and Updates.html">News and Updates</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="news-article-page">
+      <div class="news-article-shell">
+        <a class="news-article-action" href="/News and Updates.html">Back to News</a>
+        <article class="news-article-card">
+          <img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.title)}">
+          <div class="news-article-copy">
+            <span class="news-article-type">${escapeHtml(newsType)}</span>
+            <div class="news-article-meta">
+              <span>${escapeHtml(formatLiberiaDate(item.publish_date || item.created_at))}</span>
+              <span>By ${escapeHtml(item.author_name)}</span>
+              <span>${viewCount} views</span>
+              <span>${shareCount} shares</span>
+            </div>
+            <h1>${escapeHtml(item.title)}</h1>
+            <div class="news-article-body"><p>${formatMultilineHtml(item.body)}</p></div>
+            <div class="news-article-actions">
+              <button class="news-article-action" type="button" id="copyArticleLink">Copy Link</button>
+              <button class="news-article-action" type="button" id="shareArticleLink">Share Article</button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <script>
+      const articleUrl = ${JSON.stringify(articleUrl)};
+      const articleTitle = ${JSON.stringify(item.title)};
+      const articleId = ${JSON.stringify(String(item.id))};
+
+      async function registerShare() {
+        try {
+          await fetch('/api/news/' + encodeURIComponent(articleId) + '/share', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+        } catch (error) {
+        }
+      }
+
+      async function copyArticleLink(button) {
+        try {
+          await navigator.clipboard.writeText(articleUrl);
+          await registerShare();
+          button.textContent = 'Copied';
+          window.setTimeout(() => {
+            button.textContent = 'Copy Link';
+          }, 1800);
+        } catch (error) {
+          button.textContent = 'Copy Failed';
+          window.setTimeout(() => {
+            button.textContent = 'Copy Link';
+          }, 1800);
+        }
+      }
+
+      async function shareArticle(button) {
+        if (navigator.share) {
+          try {
+            await navigator.share({ title: articleTitle, url: articleUrl });
+            await registerShare();
+            return;
+          } catch (error) {
+            if (error && error.name === 'AbortError') {
+              return;
+            }
+          }
+        }
+
+        await copyArticleLink(button);
+      }
+
+      document.getElementById('copyArticleLink').addEventListener('click', function() {
+        copyArticleLink(this);
+      });
+
+      document.getElementById('shareArticleLink').addEventListener('click', function() {
+        shareArticle(this);
+      });
+    </script>
+  </body>
+  </html>`;
+}
+
 function setSessionCookie(response, token, request) {
   const parts = [
     `${cookieName}=${encodeURIComponent(token)}`,
@@ -513,6 +804,16 @@ async function initializeDatabase() {
   await pool.query(`
     ALTER TABLE news_updates
     ADD COLUMN IF NOT EXISTS news_type TEXT NOT NULL DEFAULT 'Other'
+  `);
+
+  await pool.query(`
+    ALTER TABLE news_updates
+    ADD COLUMN IF NOT EXISTS view_count BIGINT NOT NULL DEFAULT 0
+  `);
+
+  await pool.query(`
+    ALTER TABLE news_updates
+    ADD COLUMN IF NOT EXISTS share_count BIGINT NOT NULL DEFAULT 0
   `);
 
   databaseReady = true;
@@ -1450,7 +1751,7 @@ async function handleNewsApi(response) {
 
   try {
     const result = await pool.query(
-      `SELECT id, title, body, image_url, publish_date, news_type, author_name, created_at
+      `SELECT id, title, body, image_url, publish_date, news_type, author_name, created_at, view_count, share_count
        FROM news_updates
        ORDER BY publish_date DESC, created_at DESC`
     );
@@ -1458,6 +1759,88 @@ async function handleNewsApi(response) {
   } catch (error) {
     console.error('News API failed:', error);
     sendJson(response, 500, { error: 'Unable to load news updates.' });
+  }
+}
+
+async function loadNewsItemById(newsId) {
+  if (!databaseReady || !pool) {
+    return null;
+  }
+
+  const result = await pool.query(
+    `SELECT id, title, body, image_url, publish_date, news_type, author_name, created_at, view_count, share_count
+     FROM news_updates
+     WHERE id = $1`,
+    [newsId]
+  );
+
+  return result.rows[0] || null;
+}
+
+async function handleNewsArticle(request, response, newsId) {
+  if (!databaseReady || !pool) {
+    response.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' });
+    response.end(databaseInitError ? databaseInitError.message : 'Database is not ready.');
+    return;
+  }
+
+  try {
+    let item;
+
+    if (isCrawlerRequest(request)) {
+      item = await loadNewsItemById(newsId);
+    } else {
+      const result = await pool.query(
+        `UPDATE news_updates
+         SET view_count = view_count + 1
+         WHERE id = $1
+         RETURNING id, title, body, image_url, publish_date, news_type, author_name, created_at, view_count, share_count`,
+        [newsId]
+      );
+      item = result.rows[0] || null;
+    }
+
+    if (!item) {
+      response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+      response.end('News article not found.');
+      return;
+    }
+
+    response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    response.end(renderNewsArticlePage(item, request));
+  } catch (error) {
+    console.error('News article page failed:', error);
+    response.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+    response.end('Unable to load news article.');
+  }
+}
+
+async function handleNewsShareCount(response, newsId) {
+  if (!databaseReady || !pool) {
+    sendJson(response, 503, {
+      error: databaseInitError ? databaseInitError.message : 'Database is not ready.'
+    });
+    return;
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE news_updates
+       SET share_count = share_count + 1
+       WHERE id = $1
+       RETURNING share_count`,
+      [newsId]
+    );
+
+    if (!result.rows.length) {
+      sendJson(response, 404, { error: 'News article not found.' });
+      return;
+    }
+
+    sendJson(response, 200, { share_count: result.rows[0].share_count });
+  } catch (error) {
+    console.error('News share count update failed:', error);
+    sendJson(response, 500, { error: 'Unable to update share count.' });
   }
 }
 
@@ -1498,14 +1881,26 @@ const server = http.createServer(async (request, response) => {
   const method = request.method || 'GET';
   const requestUrl = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
   const pathname = requestUrl.pathname;
+  const newsArticleMatch = pathname.match(/^\/news\/(\d+)$/);
+  const newsShareMatch = pathname.match(/^\/api\/news\/(\d+)\/share$/);
 
   if (method === 'POST' && pathname === '/api/bookings') {
     await handleBookingRequest(request, response);
     return;
   }
 
+  if (method === 'POST' && newsShareMatch) {
+    await handleNewsShareCount(response, Number(newsShareMatch[1]));
+    return;
+  }
+
   if (method === 'GET' && pathname === '/api/news') {
     await handleNewsApi(response);
+    return;
+  }
+
+  if (method === 'GET' && newsArticleMatch) {
+    await handleNewsArticle(request, response, Number(newsArticleMatch[1]));
     return;
   }
 
