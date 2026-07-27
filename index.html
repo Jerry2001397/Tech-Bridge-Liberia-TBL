@@ -41,6 +41,96 @@
             text-decoration: underline;
         }
 
+        .feature-news-spotlight {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(160deg, #0f3460 0%, #174a7a 58%, #1f6ca8 100%);
+            color: #ffffff;
+        }
+
+        .feature-news-spotlight::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.2), transparent 42%);
+            pointer-events: none;
+        }
+
+        .feature-news-spotlight .feature-icon,
+        .feature-news-spotlight .feature-meta,
+        .feature-news-spotlight h3,
+        .feature-news-spotlight p {
+            position: relative;
+            z-index: 1;
+            color: #ffffff;
+        }
+
+        .feature-news-spotlight .feature-icon {
+            background: rgba(255, 255, 255, 0.16);
+            color: #ffffff;
+        }
+
+        .feature-news-image {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 190px;
+            object-fit: cover;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 18px 36px rgba(6, 23, 46, 0.22);
+        }
+
+        .feature-news-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.82);
+        }
+
+        .feature-news-copy {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            gap: 12px;
+        }
+
+        .feature-news-copy h3 {
+            margin: 0;
+        }
+
+        .feature-news-copy p {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.88);
+        }
+
+        .feature-news-spotlight .feature-link,
+        .feature-news-spotlight .feature-book-btn {
+            position: relative;
+            z-index: 1;
+            border-color: rgba(255, 255, 255, 0.24);
+        }
+
+        .feature-news-spotlight .feature-link {
+            background: #ffffff;
+            color: #123252;
+        }
+
+        .feature-news-spotlight .feature-book-btn {
+            background: transparent;
+            color: #ffffff;
+        }
+
+        .feature-news-spotlight .feature-book-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
         @keyframes latestNewsTicker {
             from {
                 transform: translateX(100%);
@@ -948,6 +1038,23 @@
                         <a href="#booking" class="feature-book-btn">Book Now</a>
                     </div>
                 </div>
+                <div class="feature feature-news-spotlight" id="homeNewsSpotlightCard">
+                    <div class="feature-icon">News</div>
+                    <span class="feature-meta">Latest Update</span>
+                    <img id="homeNewsSpotlightImage" src="./New image file/web-development-illustration.svg" alt="Latest news update" class="feature-news-image">
+                    <div class="feature-news-copy">
+                        <div class="feature-news-meta">
+                            <span id="homeNewsSpotlightType">News</span>
+                            <span id="homeNewsSpotlightDate">Just now</span>
+                        </div>
+                        <h3 id="homeNewsSpotlightTitle">Fresh updates from Tech Bridge Liberia</h3>
+                        <p id="homeNewsSpotlightBody">Recent news from the news page will rotate here automatically so visitors can see what is new without leaving the home page.</p>
+                    </div>
+                    <div class="feature-actions">
+                        <a href="./News and Updates.html" class="feature-link" id="homeNewsSpotlightLink">Read full news</a>
+                        <a href="#booking" class="feature-book-btn">Book Now</a>
+                    </div>
+                </div>
                 <div class="feature">
                     <div class="feature-icon">Data</div>
                     <h3>Data Collection, Cleaning, Visualization and Analysis</h3>
@@ -1203,7 +1310,14 @@
         const serviceSpotlightTitle = document.getElementById('serviceSpotlightTitle');
         const serviceSpotlightDescription = document.getElementById('serviceSpotlightDescription');
         const serviceSpotlightExploreLink = document.getElementById('serviceSpotlightExploreLink');
+        const homeNewsSpotlightImage = document.getElementById('homeNewsSpotlightImage');
+        const homeNewsSpotlightType = document.getElementById('homeNewsSpotlightType');
+        const homeNewsSpotlightDate = document.getElementById('homeNewsSpotlightDate');
+        const homeNewsSpotlightTitle = document.getElementById('homeNewsSpotlightTitle');
+        const homeNewsSpotlightBody = document.getElementById('homeNewsSpotlightBody');
+        const homeNewsSpotlightLink = document.getElementById('homeNewsSpotlightLink');
         let latestNewsShareUrl = '';
+        let newsRotationTimer = 0;
         const rotatingServices = [
             {
                 title: 'Web Development',
@@ -1305,6 +1419,85 @@
             return new URL(`./News and Updates.html#news-${encodeURIComponent(item.id)}`, window.location.href).toString();
         }
 
+        function formatLiberiaDate(value) {
+            if (!value) {
+                return 'Recent';
+            }
+
+            return new Intl.DateTimeFormat('en-LR', {
+                timeZone: 'Africa/Monrovia',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            }).format(new Date(value));
+        }
+
+        function normalizeNewsType(value) {
+            return String(value || '').trim() || 'News';
+        }
+
+        function truncateText(value, maxLength) {
+            const text = String(value || '').replace(/\s+/g, ' ').trim();
+            if (!text) {
+                return '';
+            }
+
+            if (text.length <= maxLength) {
+                return text;
+            }
+
+            return text.slice(0, maxLength - 1).trimEnd() + '...';
+        }
+
+        function renderHomeNewsSpotlight(item) {
+            if (!item || !homeNewsSpotlightTitle || !homeNewsSpotlightBody || !homeNewsSpotlightLink) {
+                return;
+            }
+
+            const shareUrl = buildNewsUrl(item);
+            const title = String(item.title || 'Latest update from Tech Bridge Liberia').trim() || 'Latest update from Tech Bridge Liberia';
+            const body = truncateText(item.body, 170) || 'Visit the news page to read the latest update from Tech Bridge Liberia.';
+
+            if (homeNewsSpotlightImage) {
+                homeNewsSpotlightImage.src = item.image_url || './New image file/web-development-illustration.svg';
+                homeNewsSpotlightImage.alt = title;
+            }
+
+            if (homeNewsSpotlightType) {
+                homeNewsSpotlightType.textContent = normalizeNewsType(item.news_type);
+            }
+
+            if (homeNewsSpotlightDate) {
+                homeNewsSpotlightDate.textContent = formatLiberiaDate(item.publish_date || item.created_at);
+            }
+
+            homeNewsSpotlightTitle.textContent = title;
+            homeNewsSpotlightBody.textContent = body;
+            homeNewsSpotlightLink.href = shareUrl;
+        }
+
+        function startHomeNewsRotation(items) {
+            if (!Array.isArray(items) || !items.length || !homeNewsSpotlightTitle) {
+                return;
+            }
+
+            if (newsRotationTimer) {
+                window.clearInterval(newsRotationTimer);
+            }
+
+            let newsIndex = 0;
+            renderHomeNewsSpotlight(items[newsIndex]);
+
+            if (items.length === 1) {
+                return;
+            }
+
+            newsRotationTimer = window.setInterval(() => {
+                newsIndex = (newsIndex + 1) % items.length;
+                renderHomeNewsSpotlight(items[newsIndex]);
+            }, 5000);
+        }
+
         async function loadLatestNewsTicker() {
             if (!latestNewsBar || !latestNewsTrack) return;
 
@@ -1327,6 +1520,7 @@
                     `<a href="${escapeHtml(latestNewsShareUrl)}" class="latest-news-link">${title}</a>` +
                     `<a href="${escapeHtml(latestNewsShareUrl)}" class="latest-news-link" aria-hidden="true" tabindex="-1">${title}</a>`;
                 latestNewsBar.classList.add('is-visible');
+                startHomeNewsRotation(items.filter((item) => item && item.title));
             } catch (error) {
                 console.error('Unable to load latest news ticker', error);
             }
