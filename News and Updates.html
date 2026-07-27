@@ -301,7 +301,7 @@
                         <img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.title)}">
                         <div class="news-card-copy">
                             <span class="news-type-badge">${escapeHtml(newsType)}</span>
-                            <div class="news-meta">${escapeHtml(formatLiberiaDateTime(item.created_at))} | ${escapeHtml(item.author_name)}</div>
+                            <div class="news-meta">${escapeHtml(formatLiberiaDateTime(item.created_at))} | by ${escapeHtml(item.author_name)}</div>
                             <h2>${escapeHtml(item.title)}</h2>
                             <p>${body}</p>
                             <div class="news-card-actions">

@@ -746,11 +746,9 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
   const newsList = newsRows.length
     ? newsRows.map((row) => `
         <article class="news-item">
-          <img src="${escapeHtml(row.image_url)}" alt="${escapeHtml(row.title)}" class="news-thumb">
           <div class="news-item-copy">
-            <div class="news-item-meta">${escapeHtml(row.news_type || 'Other')} | ${escapeHtml(formatLiberiaDateTime(row.created_at))} | ${escapeHtml(row.author_name)}</div>
+            <div class="news-item-meta">${escapeHtml(row.news_type || 'Other')} | ${escapeHtml(formatLiberiaDateTime(row.created_at))} | by ${escapeHtml(row.author_name)}</div>
             <h3>${escapeHtml(row.title)}</h3>
-            <p>${formatMultilineHtml(row.body)}</p>
           </div>
           <div class="news-actions">
             <a class="secondary-btn" href="/admin?editNews=${escapeHtml(row.id)}#newsComposer">Edit</a>
@@ -830,10 +828,8 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
       .delete-btn { padding: 10px 14px; border: 0; border-radius: 10px; background: var(--admin-danger); color: #fff; font-weight: 700; cursor: pointer; }
       .delete-btn:hover { background: #951f2b; }
       .news-list { display: grid; gap: 16px; }
-      .news-item { display: grid; grid-template-columns: 160px minmax(0, 1fr) auto; gap: 18px; align-items: start; padding: 18px; border: 1px solid var(--admin-border); border-radius: 16px; background: #ffffff; }
-      .news-thumb { width: 160px; height: 120px; object-fit: cover; border-radius: 14px; background: #ffffff; border: 1px solid var(--admin-border); }
-      .news-item-copy h3 { margin: 0 0 8px; }
-      .news-item-copy p { margin: 0; color: var(--admin-ink-soft); line-height: 1.7; }
+      .news-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 18px; border: 1px solid var(--admin-border); border-radius: 16px; background: #ffffff; }
+      .news-item-copy h3 { margin: 0; }
       .news-item-meta { margin-bottom: 8px; color: var(--admin-ink-soft); font-size: 0.92rem; font-weight: 700; }
       .news-actions { display: flex; flex-direction: column; gap: 10px; }
       .news-actions form { margin: 0; }
@@ -846,7 +842,6 @@ function renderAdminDashboard(bookingRows, newsRows, options = {}) {
         .menu-toggle, .logout, .publish-btn { width: 100%; }
         .menu-panel { position: static; width: 100%; margin-top: 12px; }
         .hero, .stats, .news-form-grid, .news-item { grid-template-columns: 1fr; }
-        .news-thumb { width: 100%; height: 220px; }
         .form-actions { justify-content: stretch; }
         .section-actions, .news-actions { width: 100%; }
         .close-panel-btn, .secondary-btn { width: 100%; }
