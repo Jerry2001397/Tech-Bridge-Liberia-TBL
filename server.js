@@ -1806,6 +1806,11 @@ async function handleNewsArticle(request, response, newsId) {
       return;
     }
 
+    if (!isCrawlerRequest(request)) {
+      redirect(response, `/News and Updates.html#news-${encodeURIComponent(String(item.id))}`);
+      return;
+    }
+
     response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     response.end(renderNewsArticlePage(item, request));
   } catch (error) {
