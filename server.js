@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const Busboy = require('busboy');
 const fs = require('fs');
 const http = require('http');
+const nodemailer = require('nodemailer');
 const path = require('path');
 const { Pool } = require('pg');
 
@@ -12,8 +13,12 @@ const adminPassword = process.env.ADMIN_PASSWORD || '';
 const defaultSessionSecret = 'change-me-in-render';
 const sessionSecret = process.env.SESSION_SECRET || defaultSessionSecret;
 const databaseUrl = process.env.DATABASE_URL || '';
-const sendGridApiKey = process.env.SENDGRID_API_KEY || '';
-const sendGridSender = process.env.SENDGRID_SENDER || '';
+const smtpHost = String(process.env.SMTP_HOST || 'smtp.gmail.com').trim();
+const smtpPort = parseInt(process.env.SMTP_PORT || '465', 10);
+const smtpSecure = String(process.env.SMTP_SECURE || 'true').trim().toLowerCase() !== 'false';
+const smtpUser = process.env.SMTP_USER || '';
+const smtpPass = process.env.SMTP_PASS || '';
+const mailFrom = process.env.MAIL_FROM || smtpUser;
 const notifyEmail = process.env.NOTIFY_EMAIL || '';
 const supabaseUrl = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -975,48 +980,35 @@ async function initializeDatabase() {
 }
 
 async function sendBookingNotification(submission) {
-  if (!sendGridApiKey || !sendGridSender || !notifyEmail) {
+  if (!smtpHost || !smtpUser || !smtpPass || !mailFrom || !notifyEmail) {
     return { skipped: true };
   }
 
-  const message = {
-    personalizations: [
-      {
-        to: [{ email: notifyEmail }],
-        subject: 'New Booking Request'
-      }
-    ],
-    from: { email: sendGridSender, name: 'Tech Bridge Liberia Notifications' },
-    reply_to: { email: submission.email, name: submission.full_name },
-    content: [
-      {
-        type: 'text/plain',
-        value:
-          `New booking request:\n` +
-          `Name: ${submission.full_name}\n` +
-          `Email: ${submission.email}\n` +
-          `Phone: ${submission.phone}\n` +
-          `Preferred date: ${submission.preferred_service_date}\n` +
-          `Service: ${submission.service_type}\n` +
-          `Payment method: ${submission.payment_method}\n` +
-          `Address: ${submission.address}\n`
-      }
-    ]
-  };
-
-  const emailResponse = await fetch('https://api.sendgrid.com/v3/mail/send', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${sendGridApiKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(message)
+  const transport = nodemailer.createTransport({
+    host: smtpHost,
+    port: Number.isFinite(smtpPort) ? smtpPort : 465,
+    secure: smtpSecure,
+    auth: {
+      user: smtpUser,
+      pass: smtpPass
+    }
   });
 
-  if (!emailResponse.ok) {
-    const detail = await emailResponse.text();
-    throw new Error(`SendGrid error: ${emailResponse.status} ${detail}`);
-  }
+  await transport.sendMail({
+    to: notifyEmail,
+    from: mailFrom,
+    replyTo: submission.email,
+    subject: 'New Booking Request',
+    text:
+      `New booking request:\n` +
+      `Name: ${submission.full_name}\n` +
+      `Email: ${submission.email}\n` +
+      `Phone: ${submission.phone}\n` +
+      `Preferred date: ${submission.preferred_service_date}\n` +
+      `Service: ${submission.service_type}\n` +
+      `Payment method: ${submission.payment_method}\n` +
+      `Address: ${submission.address}\n`
+  });
 
   return { skipped: false };
 }

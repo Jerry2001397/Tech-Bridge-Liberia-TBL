@@ -7,7 +7,7 @@ This site now includes a Node server that:
 - serves the static website
 - stores home page booking form submissions in PostgreSQL
 - provides an admin login at `/admin` to review booking requests
-- can email booking notifications when SendGrid variables are configured
+- can email booking notifications when SMTP variables are configured
 
 ### Render Setup
 
@@ -25,8 +25,12 @@ Set or confirm these environment values in Render:
 - `PUBLIC_SITE_URL`: optional canonical site URL if you want absolute links to use your custom domain
 - `DATABASE_URL`: supplied from the Render PostgreSQL database
 - `DATABASE_SSL`: keep `false` for the Render internal database URL unless you switch to an SSL-required external connection
-- `SENDGRID_API_KEY`: SendGrid API key for booking notifications
-- `SENDGRID_SENDER`: verified sender email address in SendGrid
+- `SMTP_HOST`: SMTP host, use `smtp.gmail.com` for Gmail
+- `SMTP_PORT`: SMTP port, use `465` for Gmail SSL
+- `SMTP_SECURE`: `true` for port `465`
+- `SMTP_USER`: the Gmail address that will send booking notifications
+- `SMTP_PASS`: the Gmail app password for that account
+- `MAIL_FROM`: sender address shown on outgoing booking alerts, usually the same as `SMTP_USER`
 - `NOTIFY_EMAIL`: inbox that should receive new booking request alerts
 - `SUPABASE_URL`: your Supabase project URL for CDN-backed news image storage
 - `SUPABASE_SERVICE_ROLE_KEY`: service role key used by the server to upload and delete news images
@@ -74,6 +78,20 @@ Example `SUPABASE_URL` format:
 After deployment, open `/admin` on the deployed site and sign in with the admin credentials you configured in Render.
 
 If you deploy on a Render subdomain first and later add a custom domain, the server will now accept admin and form POSTs from the active site host automatically. Set `PUBLIC_SITE_URL` only when you want generated absolute URLs to always use a specific canonical domain.
+
+### Gmail Booking Alerts
+
+To receive booking alerts at `techbridgeliberiatbl@gmail.com`, set these Render values:
+
+- `SMTP_HOST`: `smtp.gmail.com`
+- `SMTP_PORT`: `465`
+- `SMTP_SECURE`: `true`
+- `SMTP_USER`: `techbridgeliberiatbl@gmail.com`
+- `SMTP_PASS`: your Gmail app password, not your normal Gmail password
+- `MAIL_FROM`: `techbridgeliberiatbl@gmail.com`
+- `NOTIFY_EMAIL`: `techbridgeliberiatbl@gmail.com`
+
+Gmail requires 2-Step Verification and an App Password for SMTP access. Create the app password in your Google Account security settings, then paste it into `SMTP_PASS` in Render and redeploy.
 
 ### Backend Routes
 
