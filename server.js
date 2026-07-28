@@ -16,10 +16,11 @@ const databaseUrl = process.env.DATABASE_URL || '';
 const smtpHost = String(process.env.SMTP_HOST || 'smtp.gmail.com').trim();
 const smtpPort = parseInt(process.env.SMTP_PORT || '465', 10);
 const smtpSecure = String(process.env.SMTP_SECURE || 'true').trim().toLowerCase() !== 'false';
-const smtpUser = process.env.SMTP_USER || '';
-const smtpPass = process.env.SMTP_PASS || '';
-const mailFrom = process.env.MAIL_FROM || smtpUser;
-const notifyEmail = process.env.NOTIFY_EMAIL || '';
+const smtpUser = String(process.env.SMTP_USER || '').trim();
+const rawSmtpPass = String(process.env.SMTP_PASS || '');
+const smtpPass = /gmail\.com$/i.test(smtpHost) ? rawSmtpPass.replace(/\s+/g, '') : rawSmtpPass;
+const mailFrom = String(process.env.MAIL_FROM || smtpUser).trim();
+const notifyEmail = String(process.env.NOTIFY_EMAIL || '').trim();
 const supabaseUrl = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '');
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const supabaseStorageBucket = process.env.SUPABASE_STORAGE_BUCKET || 'news-images';
@@ -422,13 +423,58 @@ function getStorageHealthStatus() {
 
 function logStartupHealthChecks() {
   const storageHealth = getStorageHealthStatus();
+  const emailHealth = getEmailHealthStatus();
 
   if (storageHealth.isConfigured) {
     console.log(`[startup] ${storageHealth.label}: ${storageHealth.message}`);
+  } else {
+    console.warn(`[startup] ${storageHealth.label}: ${storageHealth.message}`);
+  }
+
+  if (emailHealth.isConfigured) {
+    console.log(`[startup] ${emailHealth.label}: ${emailHealth.message}`);
     return;
   }
 
-  console.warn(`[startup] ${storageHealth.label}: ${storageHealth.message}`);
+  console.warn(`[startup] ${emailHealth.label}: ${emailHealth.message}`);
+}
+
+function getEmailHealthStatus() {
+  const missingEnvVars = [];
+
+  if (!smtpHost) {
+    missingEnvVars.push('SMTP_HOST');
+  }
+
+  if (!smtpUser) {
+    missingEnvVars.push('SMTP_USER');
+  }
+
+  if (!smtpPass) {
+    missingEnvVars.push('SMTP_PASS');
+  }
+
+  if (!mailFrom) {
+    missingEnvVars.push('MAIL_FROM');
+  }
+
+  if (!notifyEmail) {
+    missingEnvVars.push('NOTIFY_EMAIL');
+  }
+
+  if (missingEnvVars.length === 0) {
+    return {
+      isConfigured: true,
+      label: 'Booking Email Active',
+      message: `Alerts will be sent to ${notifyEmail} using ${smtpHost}.`
+    };
+  }
+
+  return {
+    isConfigured: false,
+    label: 'Booking Email Disabled',
+    message: `Missing ${missingEnvVars.join(', ')}. Booking requests will save, but no email alert will be sent.`
+  };
 }
 
 function encodeStorageObjectPath(objectPath) {
