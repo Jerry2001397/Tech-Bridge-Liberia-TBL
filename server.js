@@ -20,7 +20,7 @@ const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const supabaseStorageBucket = process.env.SUPABASE_STORAGE_BUCKET || 'news-images';
 const isProduction = process.env.NODE_ENV === 'production';
 const configuredPublicSiteUrl = String(process.env.PUBLIC_SITE_URL || '').trim().replace(/\/+$/, '');
-const publicSiteUrl = configuredPublicSiteUrl || (isProduction ? 'https://techbridgeliberia.com' : '');
+const publicSiteUrl = configuredPublicSiteUrl;
 const cookieName = 'tbl_admin_session';
 const sessionDurationMs = 8 * 60 * 60 * 1000;
 const newsUploadDir = path.resolve(rootDir, 'uploads', 'news');
@@ -166,6 +166,28 @@ function getRequestOrigin(request) {
   return `${protocol}://${host}`;
 }
 
+function getAllowedRequestOrigins(request) {
+  const allowedOrigins = new Set();
+  const requestOrigin = (() => {
+    const forwardedProto = String(request.headers['x-forwarded-proto'] || '').split(',')[0].trim();
+    const protocol = forwardedProto === 'https' ? 'https' : 'http';
+    const forwardedHost = normalizeHostValue(request.headers['x-forwarded-host']);
+    const requestHost = normalizeHostValue(request.headers.host);
+    const host = forwardedHost || requestHost || `localhost:${port}`;
+    return `${protocol}://${host}`;
+  })();
+
+  if (requestOrigin) {
+    allowedOrigins.add(requestOrigin);
+  }
+
+  if (publicSiteUrl) {
+    allowedOrigins.add(publicSiteUrl);
+  }
+
+  return allowedOrigins;
+}
+
 function buildAbsoluteUrl(request, targetPath) {
   return new URL(targetPath, getRequestOrigin(request)).toString();
 }
@@ -245,15 +267,17 @@ function createCsrfToken(sessionToken) {
 }
 
 function isSameOriginRequest(request) {
-  const expectedOrigin = getRequestOrigin(request);
+  const allowedOrigins = getAllowedRequestOrigins(request);
   const originHeader = String(request.headers.origin || '').trim();
   if (originHeader) {
-    return constantTimeEqual(getTrustedOriginFromHeader(originHeader), expectedOrigin);
+    const trustedOrigin = getTrustedOriginFromHeader(originHeader);
+    return Array.from(allowedOrigins).some((allowedOrigin) => constantTimeEqual(trustedOrigin, allowedOrigin));
   }
 
   const refererHeader = String(request.headers.referer || '').trim();
   if (refererHeader) {
-    return constantTimeEqual(getTrustedOriginFromHeader(refererHeader), expectedOrigin);
+    const trustedOrigin = getTrustedOriginFromHeader(refererHeader);
+    return Array.from(allowedOrigins).some((allowedOrigin) => constantTimeEqual(trustedOrigin, allowedOrigin));
   }
 
   return false;

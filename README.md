@@ -22,6 +22,7 @@ Set or confirm these environment values in Render:
 - `ADMIN_USERNAME`: admin login username
 - `ADMIN_PASSWORD`: admin login password
 - `SESSION_SECRET`: generated session signing secret
+- `PUBLIC_SITE_URL`: optional canonical site URL if you want absolute links to use your custom domain
 - `DATABASE_URL`: supplied from the Render PostgreSQL database
 - `DATABASE_SSL`: keep `false` for the Render internal database URL unless you switch to an SSL-required external connection
 - `SENDGRID_API_KEY`: SendGrid API key for booking notifications
@@ -71,6 +72,8 @@ Example `SUPABASE_URL` format:
 ### Admin Access
 
 After deployment, open `/admin` on the deployed site and sign in with the admin credentials you configured in Render.
+
+If you deploy on a Render subdomain first and later add a custom domain, the server will now accept admin and form POSTs from the active site host automatically. Set `PUBLIC_SITE_URL` only when you want generated absolute URLs to always use a specific canonical domain.
 
 ### Backend Routes
 
